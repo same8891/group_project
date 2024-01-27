@@ -137,9 +137,18 @@ fun HomeScreen() {
     val api: FireBaseAPI = viewModel(factory = FireBaseAPI.Factory)
     var u1 = user("kkk","00")
     var result = ""
-    api.viewModelScope.launch {
-        result = api.putUser(u1)
-        Log.d("api",result)
+    api.checkIfUserExists(u1.account){result->
+        Log.d("check","$result")
+        if(result){
+            Log.d("check","$result")
+            Log.d("check","user already exist")
+        }
+        else{
+            Log.d("check","$result")
+            api.putUser(u1){ result ->
+                Log.d("addUser","$result")
+            }
+        }
     }
 }
 
