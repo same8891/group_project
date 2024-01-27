@@ -66,6 +66,7 @@ dependencies {
     implementation "androidx.compose.material:material-icons-extended:1.5.4"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.7.20"
     //  Add the navigation dependency
     implementation 'androidx.navigation:navigation-compose:2.6.0'
     implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
