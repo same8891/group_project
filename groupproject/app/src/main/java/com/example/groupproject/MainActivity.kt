@@ -6,7 +6,10 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
@@ -20,12 +23,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.get
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -41,6 +46,8 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.FirebaseApp
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import com.example.groupproject.ui.HomeScreen
+import org.checkerframework.common.subtyping.qual.Bottom
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,9 +85,11 @@ val items = listOf(
 fun NavigationBar(
     navController: NavController
 ) {
+    Column {
     BottomNavigation(
         backgroundColor = Color.White,
-        modifier = Modifier.background(MaterialTheme.colorScheme.primary)
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.primary)
     ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         var currentRoute = Screen.Home.route
@@ -91,7 +100,7 @@ fun NavigationBar(
                 selected = currentRoute == screen.route,
                 onClick = {
                     Log.d("current", currentRoute!!)
-                    if(currentRoute != screen.route) {
+                    if (currentRoute != screen.route) {
                         currentRoute = screen.route
                         navController.navigate(screen.route) {
                             popUpTo(navController.graph.findStartDestination().id) {
@@ -105,6 +114,7 @@ fun NavigationBar(
             )
         }
     }
+    }
 }
 @Composable
 fun NavigationMain() {
@@ -115,7 +125,7 @@ fun NavigationMain() {
         startDestination = Screen.Home.route
     ) {
         composable(Screen.Home.route) {
-            HomeScreen()
+            HomeScreen(navController)
         }
         composable(Screen.Planning.route) {
             PlanningScreen()
@@ -128,29 +138,10 @@ fun NavigationMain() {
         }
     }
 
-    NavigationBar(navController = navController)
+
 }
-@SuppressLint("CoroutineCreationDuringComposition")
-@Composable
-fun HomeScreen() {
-    Log.d("Screen", "home")
-    val api: FireBaseAPI = viewModel(factory = FireBaseAPI.Factory)
-    var u1 = user("kkk","00")
-    var result = ""
-    api.checkIfUserExists(u1.account){result->
-        Log.d("check","$result")
-        if(result){
-            Log.d("check","$result")
-            Log.d("check","user already exist")
-        }
-        else{
-            Log.d("check","$result")
-            api.putUser(u1){ result ->
-                Log.d("addUser","$result")
-            }
-        }
-    }
-}
+
+
 
 
 @Composable
