@@ -1,4 +1,6 @@
 package com.example.groupproject.ui.auth
 
-class LoginScreen {
+import androidx.navigation.NavHostController
+
+class LoginScreen(navController: NavHostController, authViewModel: AuthViewModel) {
 }

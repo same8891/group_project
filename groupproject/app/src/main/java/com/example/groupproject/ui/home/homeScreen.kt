@@ -1,4 +1,6 @@
 package com.example.groupproject.ui.home
 
-class homeScreen {
+import androidx.navigation.NavHostController
+
+class homeScreen(navController: NavHostController, homeViewModel: homeViewModel) {
 }

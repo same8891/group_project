@@ -1,4 +1,6 @@
 package com.example.groupproject.ui.setting
 
-class settingScreen {
+import androidx.navigation.NavHostController
+
+class settingScreen(navController: NavHostController, settingsViewModel: settingViewModel) {
 }

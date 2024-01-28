@@ -1,4 +1,6 @@
 package com.example.groupproject.ui.profile
 
-class profileScreen {
+import androidx.navigation.NavHostController
+
+class profileScreen(navController: NavHostController, profileViewModel: profileViewModel) {
 }

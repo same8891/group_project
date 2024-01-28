@@ -1,164 +1,179 @@
 package com.example.groupproject
 
-import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Event
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.get
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.groupproject.data.FirebaseApi
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.FirebaseApp
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import com.example.groupproject.ui.HomeScreen
-import org.checkerframework.common.subtyping.qual.Bottom
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.List
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.groupproject.theme.groupProjectTheme
+import com.example.groupproject.ui.auth.AuthViewModel
+import com.example.groupproject.ui.auth.LoginScreen
+import com.example.groupproject.ui.auth.RegisterScreen
+import com.example.groupproject.ui.home.homeScreen
+import com.example.groupproject.ui.home.homeViewModel
+import com.example.groupproject.ui.profile.profileScreen
+import com.example.groupproject.ui.profile.profileViewModel
+import com.example.groupproject.ui.setting.settingScreen
+import com.example.groupproject.ui.setting.settingViewModel
+import com.example.groupproject.ui.trips.tripsScreen
+import com.example.groupproject.ui.trips.tripsViewModel
 
 class MainActivity : ComponentActivity() {
+
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        val api = FireBaseAPI
-//        var u1 = user("kkk","00")
-//        var res = api.PutUser(u1)
-//        Log.d("api",res)
-        Log.d("api","aaaaa")
         setContent {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colorScheme.background
-            ) {
-//
-                NavigationMain()
-            }
+            val navController = rememberNavController()
 
-        }
-    }
-}
-sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
-    object Home : Screen("home", "Home", Icons.Default.Home)
-    object Planning : Screen("planning", "Planning", Icons.Default.Event)
-    object Profile : Screen("profile", "Profile", Icons.Default.AccountCircle)
-    object Settings : Screen("settings", "Settings", Icons.Default.Settings)
-}
-val items = listOf(
-    Screen.Home,
-    Screen.Planning,
-    Screen.Profile,
-    Screen.Settings
-)
-@Composable
-fun NavigationBar(
-    navController: NavController
-) {
-    Column {
-    BottomNavigation(
-        backgroundColor = Color.White,
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.primary)
-    ) {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        var currentRoute = Screen.Home.route
-        items.forEach { screen ->
-            BottomNavigationItem(
-                icon = { Icon(screen.icon, contentDescription = null) },
-                label = { Text(screen.title) },
-                selected = currentRoute == screen.route,
-                onClick = {
-                    Log.d("current", currentRoute!!)
-                    if (currentRoute != screen.route) {
-                        currentRoute = screen.route
-                        navController.navigate(screen.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
+            val homeViewModel = homeViewModel()
+            val tripsViewModel = tripsViewModel()
+            val profileViewModel = profileViewModel()
+            val settingsViewModel = settingViewModel()
+            val authViewModel = AuthViewModel()
+
+            groupProjectTheme {
+                NavHost(navController, startDestination = "home") {
+                    composable("home") {
+                        homeScreen(navController, homeViewModel)
+                        val items = listOf(
+                            BottomNavigationItem(
+                                title = "Home",
+                                selectedIcon = Icons.Outlined.Home,
+                                unselectedIcon = Icons.Filled.Home,
+                                hasNews = false
+                            ),
+                            BottomNavigationItem(
+                                title = "Trips",
+                                selectedIcon = Icons.Outlined.List,
+                                unselectedIcon = Icons.Filled.List,
+                                hasNews = false
+                            ),
+                            BottomNavigationItem(
+                                title = "Profile",
+                                selectedIcon = Icons.Outlined.Person,
+                                unselectedIcon = Icons.Filled.Person,
+                                hasNews = false
+                            ),
+                            BottomNavigationItem(
+                                title = "Settings",
+                                selectedIcon = Icons.Outlined.Settings,
+                                unselectedIcon = Icons.Filled.Settings,
+                                hasNews = false,
+                                // badgeCount = 2
+                            )
+                        )
+                        var selectedItemIndex by rememberSaveable {
+                            mutableStateOf(0)
+                        }
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            color = MaterialTheme.colorScheme.background
+                        ) {
+                            Scaffold(
+                                bottomBar = {
+                                    NavigationBar {
+                                        items.forEachIndexed { index, item ->
+                                            NavigationBarItem(
+                                                selected = selectedItemIndex == index,
+                                                onClick = {
+                                                    selectedItemIndex = index
+                                                    // navController.navigate(item.title)
+                                                },
+                                                label = {
+                                                    Text(text = item.title)
+                                                },
+                                                alwaysShowLabel = false,
+                                                icon = {
+                                                    BadgedBox(
+                                                        badge = {
+                                                            if (item.badgeCount != null) {
+                                                                Badge {
+                                                                    Text(text = item.badgeCount.toString())
+                                                                }
+                                                            } else if (item.hasNews) {
+                                                                Badge()
+                                                            }
+                                                        }
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = if (index == selectedItemIndex) {
+                                                                item.selectedIcon
+                                                            } else item.unselectedIcon,
+                                                            contentDescription = item.title
+                                                        )
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            ) {
+                                Column(Modifier.padding(it)) {
+                                    when (selectedItemIndex) {
+                                        0 -> homeScreen(navController, homeViewModel)
+                                        1 -> tripsScreen(navController, tripsViewModel)
+                                        2 -> profileScreen(navController, profileViewModel)
+                                        3 -> settingScreen(navController, settingsViewModel)
+                                    }
+                                }
                             }
-                            launchSingleTop = true
-                            restoreState = true
                         }
                     }
+                    composable("trips") {
+                        tripsScreen(navController, tripsViewModel)
+                    }
+                    composable("profile") {
+                        profileScreen(navController, profileViewModel)
+                    }
+                    composable("settings") {
+                        settingScreen(navController, settingsViewModel)
+                    }
+                    composable("login") {
+                        LoginScreen(navController, authViewModel)
+                    }
+                    composable("register") {
+                        RegisterScreen(navController, authViewModel)
+                    }
                 }
-            )
+            }
         }
     }
-    }
-}
-@Composable
-fun NavigationMain() {
-    val navController = rememberNavController()
-
-    NavHost(
-        navController = navController,
-        startDestination = Screen.Home.route
-    ) {
-        composable(Screen.Home.route) {
-            HomeScreen(navController)
-        }
-        composable(Screen.Planning.route) {
-            PlanningScreen()
-        }
-        composable(Screen.Profile.route) {
-            ProfileScreen()
-        }
-        composable(Screen.Settings.route) {
-            SettingsScreen()
-        }
-    }
-
-
 }
 
 
-
-
-@Composable
-fun PlanningScreen() {
-    Log.d("Screen", "plan")
-}
-
-@Composable
-fun ProfileScreen() {
-    Log.d("Screen", "profile")
-}
-
-@Composable
-fun SettingsScreen() {
-    Log.d("Screen", "setting")
-}
-@Preview(showBackground = true)
-@Composable
-fun NavigationBarPreview() {
-    NavigationMain()
-}
+data class BottomNavigationItem(
+    val title: String,
+    val selectedIcon: ImageVector,
+    val unselectedIcon: ImageVector,
+    val hasNews: Boolean,
+    val badgeCount: Int? = null
+)

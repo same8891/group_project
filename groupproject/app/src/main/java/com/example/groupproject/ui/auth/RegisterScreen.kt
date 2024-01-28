@@ -1,4 +1,6 @@
 package com.example.groupproject.ui.auth
 
-class RegisterScreen {
+import androidx.navigation.NavHostController
+
+class RegisterScreen(navController: NavHostController, authViewModel: AuthViewModel) {
 }
