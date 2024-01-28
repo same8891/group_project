@@ -73,6 +73,27 @@ class FirebaseApi {
             }
     }
 
+
+    // Get destinations by name
+    fun getDestinationByName(destinationName: String, callback: (Destination?) -> Unit) {
+        db.collection("destinations")
+            .whereEqualTo("name", destinationName)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (!querySnapshot.isEmpty) {
+                    val destination = querySnapshot.documents[0].toObject(Destination::class.java)
+                    callback(destination)
+                } else {
+                    callback(null)
+                }
+            }
+            .addOnFailureListener {
+                println("Error getting destination by name: $it")
+                callback(null)
+            }
+    }
+
+
     // Create or update destination
     fun saveDestination(destination: Destination, destinationId: String) {
         db.collection("Destination")
@@ -115,6 +136,26 @@ class FirebaseApi {
             }
             .addOnFailureListener {
                 println("Error deleting destination: $it")
+            }
+    }
+
+    // Get all destinations
+    fun getAllDestinations(callback: (List<Destination>) -> Unit) {
+        db.collection("destinations")
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val destinationList = mutableListOf<Destination>()
+
+                for (document in querySnapshot) {
+                    val destination = document.toObject(Destination::class.java)
+                    destinationList.add(destination)
+                }
+
+                callback(destinationList)
+            }
+            .addOnFailureListener {
+                println("Error getting all destinations: $it")
+                callback(emptyList())
             }
     }
 
