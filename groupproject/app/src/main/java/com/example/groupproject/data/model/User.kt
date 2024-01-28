@@ -1,13 +1,13 @@
 package com.example.groupproject.data.model
 
 data class User(
-    val userId: String,
-    val currency: List<String>,
-    val displayName: String,
-    val email: String,
-    val password: String,
-    val saves: List<String>,
-    val trips: List<Trip>,
-    val profile: List<Profile>,
-    val reviews: List<Review>
+    val userId: String = "",
+    val currency: List<String> = emptyList(),
+    val displayName: String = "",
+    val email: String = "",
+    val password: String = "",
+    val saves: List<String> = emptyList(),
+    val trips: List<Trip> = emptyList(),
+    val profile: List<Profile> = emptyList(),
+    val reviews: List<Review> = emptyList()
 )

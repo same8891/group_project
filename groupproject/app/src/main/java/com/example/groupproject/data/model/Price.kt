@@ -1,8 +1,8 @@
 package com.example.groupproject.data.model
 
 data class Price(
-    val currency: String,
-    val value: Double
+    val currency: String = "",
+    val value: Double = 0.0
 ) {
     companion object {
         // Constants for currency conversion rates
