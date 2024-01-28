@@ -33,6 +33,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.groupproject.data.FirebaseApi
 import com.example.groupproject.theme.groupProjectTheme
 import com.example.groupproject.ui.auth.AuthViewModel
 import com.example.groupproject.ui.auth.LoginScreen
@@ -52,16 +53,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val firebaseApi = FirebaseApi()
             val navController = rememberNavController()
-
-            val homeViewModel = homeViewModel()
+            val homeViewModel = homeViewModel(firebaseApi)
             val tripsViewModel = tripsViewModel()
             val profileViewModel = profileViewModel()
             val settingsViewModel = settingViewModel()
-            val authViewModel = AuthViewModel()
+            val authViewModel = AuthViewModel(firebaseApi)
 
             groupProjectTheme {
-                NavHost(navController, startDestination = "home") {
+                NavHost(navController, startDestination = "login") {
                     composable("home") {
                         homeScreen(navController, homeViewModel)
                         val items = listOf(
