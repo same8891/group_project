@@ -39,7 +39,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.groupproject.data.FireBaseAPI
+import com.example.groupproject.data.FirebaseApi
 import com.example.groupproject.data.user
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.firestore.ktx.firestore

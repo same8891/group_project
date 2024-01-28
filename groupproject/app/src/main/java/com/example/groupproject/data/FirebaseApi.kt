@@ -1,17 +1,10 @@
 package com.example.groupproject.data
 
-import android.util.Log
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.groupproject.data.model.Destination
 import com.example.groupproject.data.model.Feedback
 import com.example.groupproject.data.model.User
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.tasks.await
+
 class FirebaseApi {
 
     private val db = FirebaseFirestore.getInstance()
