@@ -1,6 +1,7 @@
 package com.example.groupproject.data.model
 
 data class Review(
+    val reviewId: String,
     val description: String,
     val destination: String,
     val photos: List<String>,

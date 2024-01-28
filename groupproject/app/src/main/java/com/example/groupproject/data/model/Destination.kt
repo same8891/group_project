@@ -1,6 +1,7 @@
 package com.example.groupproject.data.model
 
 data class Destination(
+    val destinationId: String,
     val activityList: List<String>,
     val ageRecommendation: String,
     val description: String,

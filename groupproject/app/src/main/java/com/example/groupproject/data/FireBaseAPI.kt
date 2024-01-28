@@ -5,46 +5,170 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.groupproject.data.model.Destination
+import com.example.groupproject.data.model.Feedback
+import com.example.groupproject.data.model.User
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
+class FirebaseApi {
 
-class FireBaseAPI : ViewModel() {
+    private val db = FirebaseFirestore.getInstance()
 
-    fun putUser(newUser: user, callback: (Boolean) -> Unit): String {
-        val db = FirebaseFirestore.getInstance()
-        var result = ""
-        try {
-            db.collection("users").document(newUser.account).set(newUser)
-            callback(true)
-        } catch (e: Exception) {
-            callback(false)
-        }
-        return result
+    // Create or update user
+    fun saveUser(user: User, userId: String) {
+        db.collection("User")
+            .document(userId)
+            .set(user)
+            .addOnSuccessListener {
+                println("User saved successfully!")
+            }
+            .addOnFailureListener {
+                println("Error saving user: $it")
+            }
     }
-     fun checkIfUserExists(userId: String, callback: (Boolean) -> Unit) {
-        val db = FirebaseFirestore.getInstance()
-        val userCollection = db.collection("users")
 
-        userCollection.document(userId).get()
+    // Read user by email
+    fun getUserByEmail(email: String, callback: (User?) -> Unit) {
+        db.collection("User")
+            .whereEqualTo("email", email)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (!querySnapshot.isEmpty) {
+                    val user = querySnapshot.documents[0].toObject(User::class.java)
+                    callback(user)
+                } else {
+                    callback(null)
+                }
+            }
+            .addOnFailureListener {
+                println("Error getting user by email: $it")
+                callback(null)
+            }
+    }
+
+    // Read user
+    fun getUser(userId: String, callback: (User?) -> Unit) {
+        db.collection("User")
+            .document(userId)
+            .get()
             .addOnSuccessListener { documentSnapshot ->
-                // Check if the document exists
-                val exists = documentSnapshot.exists()
-                callback(exists)
+                if (documentSnapshot.exists()) {
+                    val user = documentSnapshot.toObject(User::class.java)
+                    callback(user)
+                } else {
+                    callback(null)
+                }
             }
-            .addOnFailureListener { exception ->
-                // Handle errors
-                callback(false) // Assuming an error means the document doesn't exist
+            .addOnFailureListener {
+                println("Error getting user: $it")
+                callback(null)
             }
     }
 
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                // Access the UsersRepository through the application's container
-                FireBaseAPI()
+    // Delete user
+    fun deleteUser(userId: String) {
+        db.collection("User")
+            .document(userId)
+            .delete()
+            .addOnSuccessListener {
+                println("User deleted successfully!")
             }
-        }
+            .addOnFailureListener {
+                println("Error deleting user: $it")
+            }
     }
+
+    // Create or update destination
+    fun saveDestination(destination: Destination, destinationId: String) {
+        db.collection("Destination")
+            .document(destinationId)
+            .set(destination)
+            .addOnSuccessListener {
+                println("Destination saved successfully!")
+            }
+            .addOnFailureListener {
+                println("Error saving destination: $it")
+            }
+    }
+
+    // Read destination
+    fun getDestination(destinationId: String, callback: (Destination?) -> Unit) {
+        db.collection("Destination")
+            .document(destinationId)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    val destination = documentSnapshot.toObject(Destination::class.java)
+                    callback(destination)
+                } else {
+                    callback(null)
+                }
+            }
+            .addOnFailureListener {
+                println("Error getting destination: $it")
+                callback(null)
+            }
+    }
+
+    // Delete destination
+    fun deleteDestination(destinationId: String) {
+        db.collection("Destination")
+            .document(destinationId)
+            .delete()
+            .addOnSuccessListener {
+                println("Destination deleted successfully!")
+            }
+            .addOnFailureListener {
+                println("Error deleting destination: $it")
+            }
+    }
+
+    // Create or update feedback
+    fun saveFeedback(feedback: Feedback, feedbackId: String) {
+        db.collection("Feedback")
+            .document(feedbackId)
+            .set(feedback)
+            .addOnSuccessListener {
+                println("Feedback saved successfully!")
+            }
+            .addOnFailureListener {
+                println("Error saving feedback: $it")
+            }
+    }
+
+    // Read feedback
+    fun getFeedback(feedbackId: String, callback: (Feedback?) -> Unit) {
+        db.collection("Feedback")
+            .document(feedbackId)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    val feedback = documentSnapshot.toObject(Feedback::class.java)
+                    callback(feedback)
+                } else {
+                    callback(null)
+                }
+            }
+            .addOnFailureListener {
+                println("Error getting feedback: $it")
+                callback(null)
+            }
+    }
+
+    // Delete feedback
+    fun deleteFeedback(feedbackId: String) {
+        db.collection("Feedback")
+            .document(feedbackId)
+            .delete()
+            .addOnSuccessListener {
+                println("Feedback deleted successfully!")
+            }
+            .addOnFailureListener {
+                println("Error deleting feedback: $it")
+            }
+    }
+
+
 }

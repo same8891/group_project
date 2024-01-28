@@ -1,6 +1,7 @@
 package com.example.groupproject.data.model
 
 data class User(
+    val userId: String,
     val currency: List<String>,
     val displayName: String,
     val email: String,
