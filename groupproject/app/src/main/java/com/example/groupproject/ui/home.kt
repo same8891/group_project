@@ -47,7 +47,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.groupproject.NavigationBar
 import com.example.groupproject.NavigationMain
 import com.example.groupproject.data.FirebaseApi
-import com.example.groupproject.data.user
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
