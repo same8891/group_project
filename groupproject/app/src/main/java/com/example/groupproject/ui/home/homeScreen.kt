@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -153,8 +154,9 @@ fun SearchBar(onSearch: (String) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
+            .height(90.dp)
             .background(MaterialTheme.colorScheme.primary)
+            .padding(16.dp)
         ,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -183,28 +185,63 @@ fun SearchBar(onSearch: (String) -> Unit) {
 fun CheckBoxList(onFilterClick: (List<String>) -> Unit) {
     val items = listOf("Nature", "Historic", "Music", "Culture")
     val checkedItems = remember { mutableStateListOf<Boolean>(false, false, false, false) }
-
-    Column(
+    var add_row = false
+    val screenWidth = LocalConfiguration.current.screenWidthDp
+    var length = 0
+    var count = 0
+    Column(modifier = Modifier.height(90.dp)
     ) {
-        items.forEachIndexed { index, item ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Checkbox(
-                    checked = checkedItems[index],
-                    onCheckedChange = { checkedItems[index] = it },
-                )
-                Text(text = item)
+        Row (modifier = Modifier.height(40.dp)){
+            items.forEachIndexed { index, item ->
+                if((length+120) > screenWidth){
+                    add_row = true
+                }
+                if (add_row == false) {
+                    Row(
+                        modifier = Modifier
+                            .width(120.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = checkedItems[index],
+                            onCheckedChange = { checkedItems[index] = it },
+                        )
+                        Text(text = item)
+                    }
+                    length += 120
+                    count++
+                }
             }
         }
-        Button(
-            onClick = { onFilterClick(getSelectedItems(items,checkedItems)) },
-            modifier = Modifier.align(Alignment.End)
-        ) {
-            Text("Filter")
+        if(add_row){
+            Row(modifier = Modifier.height(40.dp)){
+                for(i in count until 4){
+                    Row(
+                        modifier = Modifier
+                            .width(120.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = checkedItems[i],
+                            onCheckedChange = { checkedItems[i] = it },
+                        )
+                        Text(text = items[i])
+                    }
+                }
+                Button(
+                    onClick = { onFilterClick(getSelectedItems(items,checkedItems)) },
+                    modifier = Modifier.width(100.dp)
+                ) {
+                    Text("Filter")
+                }
+            }
         }
+//        Button(
+//            onClick = { onFilterClick(getSelectedItems(items,checkedItems)) },
+//            modifier = Modifier.align(Alignment.End)
+//        ) {
+//            Text("Filter")
+//        }
     }
 }
 
