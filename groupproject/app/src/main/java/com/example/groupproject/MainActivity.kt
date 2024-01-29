@@ -216,7 +216,7 @@ fun BottomNavigationBar(navController: NavHostController,
                     3 -> settingScreen(navController, settingsViewModel)
                     4 -> destinationDetailScreen(
                         navController = navController,
-                        destination = destinationName,
+                        destinationName = destinationName,
                         destinationDetailViewModel = destinationDetailViewModel
                     )
                 }
