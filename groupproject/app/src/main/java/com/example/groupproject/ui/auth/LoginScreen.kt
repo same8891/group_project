@@ -51,7 +51,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(400.dp)
+                .height(350.dp)
                 .padding(bottom = 16.dp)
         )
 
