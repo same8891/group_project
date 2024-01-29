@@ -1,4 +1,6 @@
 package com.example.groupproject.ui.destination
 
-class destinationDetailViewModel {
+import com.example.groupproject.data.FirebaseApi
+
+class destinationDetailViewModel(firebaseApi: FirebaseApi) {
 }

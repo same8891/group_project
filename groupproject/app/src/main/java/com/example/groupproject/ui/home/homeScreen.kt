@@ -142,7 +142,10 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel) {
             ) {
                 Icon(imageVector = Icons.Default.Sort, contentDescription = "Sort")
             }
-
+        }
+        val destinationName = "City of Lights"
+        Button(onClick = { navController.navigate("destinationDetail/$destinationName") }) {
+            Text(text = "enter destinationDetail/City of Lights test")
         }
     }
 }
@@ -185,8 +188,6 @@ fun SearchBar(onSearch: (String) -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
         )
-
-
     }
 }
 @Composable

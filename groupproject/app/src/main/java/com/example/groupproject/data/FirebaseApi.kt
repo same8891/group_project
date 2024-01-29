@@ -202,13 +202,33 @@ class FirebaseApi {
 
     // Get destinations by name
     fun getDestinationByName(destinationName: String, callback: (Destination?) -> Unit) {
-        db.collection("destinations")
+        db.collection("Destination")
             .whereEqualTo("name", destinationName)
             .get()
             .addOnSuccessListener { querySnapshot ->
                 if (!querySnapshot.isEmpty) {
                     val destination = querySnapshot.documents[0].toObject(Destination::class.java)
-                    callback(destination)
+
+                    // Fetch Reviews subcollection
+                    if (destination != null) {
+                        val destinationId = querySnapshot.documents[0].id
+                        val reviewsRef = db.collection("Destination").document(destinationId)
+                            .collection("reviews")
+
+                        reviewsRef.get()
+                            .addOnSuccessListener { reviewsSnapshot ->
+                                val reviewsList = reviewsSnapshot.toObjects(Review::class.java)
+                                destination.reviews = reviewsList
+
+                                callback(destination)
+                            }
+                            .addOnFailureListener {
+                                println("Error getting Reviews subcollection: $it")
+                                callback(null)
+                            }
+                    } else {
+                        callback(null)
+                    }
                 } else {
                     callback(null)
                 }
