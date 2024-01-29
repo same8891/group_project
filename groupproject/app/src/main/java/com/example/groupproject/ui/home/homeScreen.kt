@@ -147,7 +147,7 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel) {
             }
         }
         LazyColumn {
-            items(destinations) { destination ->
+            items(destinations.sortedBy {it.name}) { destination ->
                 destinationCard(destination = destination, navController = navController)
             }
         }
@@ -247,7 +247,7 @@ fun CheckBoxList(onFilterClick: (List<String>) -> Unit) {
                         Text(text = items[i])
                     }
                 }
-                Spacer(modifier = Modifier.width((screenWidth-260).dp))
+                Spacer(modifier = Modifier.width((screenWidth- 140 - 120 *(4-count)).dp))
                 Button(
                     onClick = { onFilterClick(getSelectedItems(items, checkedItems)) },
                     modifier = Modifier
@@ -258,7 +258,16 @@ fun CheckBoxList(onFilterClick: (List<String>) -> Unit) {
                 }
             }
         }
-
+        else{
+            Button(
+                onClick = { onFilterClick(getSelectedItems(items, checkedItems)) },
+                modifier = Modifier
+                    .width(100.dp).align(Alignment.End)
+            )
+            {
+                Text("Filter")
+            }
+        }
     }
 }
 
