@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -48,6 +50,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.groupproject.data.model.Destination
 import com.example.groupproject.data.model.User
+import java.util.jar.Attributes.Name
 
 @Composable
 fun HomeScreen(navController: NavHostController, homeViewModel: homeViewModel) {
@@ -85,14 +88,16 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel) {
     var State by remember { mutableStateOf(1) }
     var searchInput by remember { mutableStateOf("") }
     var selectedCheckBoxItems by remember { mutableStateOf<List<String>>(emptyList()) }
-    var selectedOption by remember { mutableStateOf(SortOrder.ASCENDING_NAME) }
+    var selectedOption1 by remember { mutableStateOf(SortOrder.ASCENDING_NAME) }
+    var selectedOption2 by remember { mutableStateOf(SortOrder.Empty) }
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
         Log.d("selectcheck","$selectedCheckBoxItems")
-        Log.d("selectoption","$selectedOption")
+        Log.d("selectoption","$selectedOption1")
+        Log.d("selectoption","$selectedOption2")
         if (State == 1) {
             SearchBar{input->
                 searchInput = input
@@ -104,9 +109,11 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel) {
             }
         }
         else{
-            RadioGroup(selectedOption = selectedOption,
-                onOptionSelected = {
-                    selectedOption = it
+            RadioGroup(selectedOption1 = selectedOption1,
+                selectedOption2 = selectedOption2,
+                onOptionSelected = { s1,s2 ->
+                    selectedOption1 = s1
+                    selectedOption2 = s2
                 })
         }
         // Tab with buttons
@@ -143,8 +150,9 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel) {
 @Composable
 fun homepre() {
     val navController = rememberNavController()
-    var selectedOption by remember { mutableStateOf(SortOrder.ASCENDING_NAME) }
-//    RadioGroup(SortOrder.ASCENDING_NAME,onOptionSelected = { selectedOption = it })
+    var selectedOption1 by remember { mutableStateOf(SortOrder.ASCENDING_NAME) }
+    var selectedOption2 by remember { mutableStateOf(SortOrder.Empty) }
+//    RadioGroup(SortOrder.ASCENDING_NAME,SortOrder.Empty,onOptionSelected = {s1,s2-> })
     CheckBoxList{}
 }
 @OptIn(ExperimentalMaterial3Api::class)
@@ -189,9 +197,13 @@ fun CheckBoxList(onFilterClick: (List<String>) -> Unit) {
     val screenWidth = LocalConfiguration.current.screenWidthDp
     var length = 0
     var count = 0
-    Column(modifier = Modifier.height(90.dp)
+    Column(modifier = Modifier
+        .height(90.dp)
+        .width(screenWidth.dp)
     ) {
-        Row (modifier = Modifier.height(40.dp)){
+        Row (modifier = Modifier
+            .height(40.dp)
+            .width(screenWidth.dp)){
             items.forEachIndexed { index, item ->
                 if((length+120) > screenWidth){
                     add_row = true
@@ -214,7 +226,9 @@ fun CheckBoxList(onFilterClick: (List<String>) -> Unit) {
             }
         }
         if(add_row){
-            Row(modifier = Modifier.height(40.dp)){
+            Row(modifier = Modifier
+                .height(40.dp)
+                .width(screenWidth.dp)){
                 for(i in count until 4){
                     Row(
                         modifier = Modifier
@@ -228,20 +242,18 @@ fun CheckBoxList(onFilterClick: (List<String>) -> Unit) {
                         Text(text = items[i])
                     }
                 }
+                Spacer(modifier = Modifier.width((screenWidth-260).dp))
                 Button(
-                    onClick = { onFilterClick(getSelectedItems(items,checkedItems)) },
-                    modifier = Modifier.width(100.dp)
-                ) {
+                    onClick = { onFilterClick(getSelectedItems(items, checkedItems)) },
+                    modifier = Modifier
+                        .width(100.dp)
+                )
+                {
                     Text("Filter")
                 }
             }
         }
-//        Button(
-//            onClick = { onFilterClick(getSelectedItems(items,checkedItems)) },
-//            modifier = Modifier.align(Alignment.End)
-//        ) {
-//            Text("Filter")
-//        }
+
     }
 }
 
@@ -252,44 +264,73 @@ fun getSelectedItems(items: List<String>, checkedItems: List<Boolean>): List<Str
 enum class SortOrder {
     ASCENDING_NAME,
     DESCENDING_NAME,
-    FAVORITES,
-    RATING
+    Likes,
+    RATING,
+    Empty
 }
 @Composable
 fun RadioGroup(
-    selectedOption: SortOrder,
-    onOptionSelected: (SortOrder) -> Unit
+    selectedOption1: SortOrder,
+    selectedOption2: SortOrder,
+    onOptionSelected: (SortOrder, SortOrder) -> Unit
 ) {
+    var currentSortOrder1 = selectedOption1
+    var currentSortOrder2 = selectedOption2
     val options = SortOrder.values()
     val choices = listOf(
-        SortOrder.ASCENDING_NAME,
-        SortOrder.DESCENDING_NAME,
-        SortOrder.FAVORITES,
+        SortOrder.Likes,
         SortOrder.RATING
     )
-    Column (){
-        choices.forEach { choice ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+    val screenWidth = LocalConfiguration.current.screenWidthDp
+    Column (modifier = Modifier
+        .height(90.dp)
+        .width(screenWidth.dp)){
+        Row (verticalAlignment = Alignment.CenterVertically){
+            Row(verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        onOptionSelected(choice)
-                    }
-            ) {
-                RadioButton(
-                    selected = choice == selectedOption,
-                    onClick = {
-                        onOptionSelected(choice)
-                    }
+                    .width(120.dp)
+                    .padding(start = 8.dp)){
+                Text(text = "Name")
+                Switch(
+                    checked = selectedOption1 == SortOrder.ASCENDING_NAME,
+                    onCheckedChange = {
+                        onOptionSelected(if (it) SortOrder.ASCENDING_NAME else SortOrder.DESCENDING_NAME,currentSortOrder2)
+                    },
+                    modifier = Modifier.padding(start = 8.dp)
                 )
-                Text(text = when (choice) {
-                    SortOrder.ASCENDING_NAME -> "Ascending Order by Name"
-                    SortOrder.DESCENDING_NAME -> "Descending Order by Name"
-                    SortOrder.FAVORITES -> "Number of Favorites"
-                    SortOrder.RATING -> "Rating"
-                })
             }
+            choices.forEach { choice ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .width(100.dp)
+                        .clickable {
+                            onOptionSelected(currentSortOrder1, choice)
+                        }
+                ) {
+                    RadioButton(
+                        selected = choice == selectedOption2,
+                        onClick = {
+                            onOptionSelected(currentSortOrder1,choice)
+                        }
+                    )
+                    Text(
+                        text = when (choice) {
+                            SortOrder.Likes -> "Likes"
+                            SortOrder.RATING -> "Rating"
+                            else -> ""
+                        }
+                    )
+                }
+            }
+        }
+        Button(
+            onClick = { onOptionSelected(SortOrder.ASCENDING_NAME,SortOrder.Empty) },
+            modifier = Modifier
+                .width(100.dp)
+                .align(Alignment.End)
+        ) {
+            Text("Clear")
         }
     }
 }
