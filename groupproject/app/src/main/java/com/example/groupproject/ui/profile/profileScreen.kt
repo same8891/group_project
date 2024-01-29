@@ -104,9 +104,7 @@ fun displayUserProfile(profile: Profile) {
 
 @Composable
 fun displayReview(review: Review) {
-    Text(text = "Title: ${review.title}")
     Text(text = "Description: ${review.description}")
     Text(text = "Rating: ${review.rating}")
-    Text(text = "Is Public: ${review.isPublic}")
     // Add more fields as needed
 }

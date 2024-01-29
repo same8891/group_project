@@ -53,7 +53,7 @@ import com.example.groupproject.data.model.User
 import java.util.jar.Attributes.Name
 
 @Composable
-fun HomeScreen(navController: NavHostController, homeViewModel: homeViewModel) {
+fun homeScreen(navController: NavHostController, homeViewModel: homeViewModel) {
     // Fetch all destinations when the screen is created
     homeViewModel.getAllDestinations()
 
@@ -84,7 +84,7 @@ fun DestinationItem(destination: Destination) {
 }
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun homeScreen(navController: NavController,homeViewModel: homeViewModel) {
+fun HomeScreen(navController: NavController,homeViewModel: homeViewModel) {
     var State by remember { mutableStateOf(1) }
     var searchInput by remember { mutableStateOf("") }
     var selectedCheckBoxItems by remember { mutableStateOf<List<String>>(emptyList()) }
