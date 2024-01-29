@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
                     composable("home") {
                         homeScreen(navController, homeViewModel)
                         BottomNavigationBar(navController, homeViewModel, tripsViewModel,
-                            profileViewModel, settingsViewModel, destinationDetailViewModel, "",  currentIndex = -1)
+                            profileViewModel, settingsViewModel, destinationDetailViewModel, "")
                     }
                     composable("trips") {
                         tripsScreen(navController, tripsViewModel)
