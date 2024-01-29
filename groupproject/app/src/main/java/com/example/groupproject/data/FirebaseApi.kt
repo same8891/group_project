@@ -20,7 +20,6 @@ class FirebaseApi {
             .set(user)
             .addOnSuccessListener {
                 println("User saved successfully!")
-
                 // Save Trips subcollection
                 user.trips.forEachIndexed { index, trip ->
                     db.collection("User")
