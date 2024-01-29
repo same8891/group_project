@@ -50,6 +50,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.groupproject.data.model.Destination
 import com.example.groupproject.data.model.User
+import com.example.groupproject.ui.destination.destinationCard
 import java.util.jar.Attributes.Name
 
 @Composable
@@ -63,7 +64,7 @@ fun HomeScreen(navController: NavHostController, homeViewModel: homeViewModel) {
     // Display the list of destinations
     LazyColumn {
         items(destinations) { destination ->
-            DestinationItem(destination = destination)
+            destinationCard(destination = destination, navController = navController)
         }
     }
 }
@@ -90,6 +91,8 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel) {
     var selectedCheckBoxItems by remember { mutableStateOf<List<String>>(emptyList()) }
     var selectedOption1 by remember { mutableStateOf(SortOrder.ASCENDING_NAME) }
     var selectedOption2 by remember { mutableStateOf(SortOrder.Empty) }
+    homeViewModel.getAllDestinations()
+    val destinations = homeViewModel.destinations.value
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -143,9 +146,10 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel) {
                 Icon(imageVector = Icons.Default.Sort, contentDescription = "Sort")
             }
         }
-        val destinationName = "City of Lights"
-        Button(onClick = { navController.navigate("destinationDetail/$destinationName") }) {
-            Text(text = "enter destinationDetail/City of Lights test")
+        LazyColumn {
+            items(destinations) { destination ->
+                destinationCard(destination = destination, navController = navController)
+            }
         }
     }
 }

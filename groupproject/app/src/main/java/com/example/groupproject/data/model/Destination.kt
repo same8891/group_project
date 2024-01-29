@@ -10,5 +10,6 @@ data class Destination(
     val location: String = "",
     val name: String = "",
     val price: Price = Price(),
-    var reviews: List<Review> = emptyList()
+    var reviews: List<Review> = emptyList(),
+    var tags: List<String> = emptyList()
 )
