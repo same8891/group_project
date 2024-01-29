@@ -7,9 +7,7 @@ data class Review(
     val description: String = "",
     val destination: String = "",
     val photos: List<String> = emptyList(),
-    val isPublic: Boolean = false,
     val rating: Int = 0,
     val timestamp: Timestamp? = null,
-    val title: String = "",
     val userId: String = ""
 )
