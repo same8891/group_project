@@ -23,13 +23,13 @@ fun homeScreen(navController: NavHostController, homeViewModel: homeViewModel) {
     // State to hold the user information
     var user by remember { mutableStateOf<User?>(null) }
     val sharedPref: SharedPreferences = navController.context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
-    val userEmail = sharedPref.getString("userEmail", "") ?: ""
+    val userEmail = sharedPref.getString("email", "") ?: ""
     Log.d("HomeTest", "homeScreen: $userEmail")
     // Fetch user information when the composable is first called
     LaunchedEffect(userEmail) {
         // Ensure userId is not empty before making the API call
         if (userEmail.isNotEmpty()) {
-            Log.d("HomeTest", "homeScreen: userId is not empty")
+            Log.d("HomeTest", "homeScreen: userEmail is not empty")
             homeViewModel.getUser(userEmail) { fetchedUser ->
                 user = fetchedUser
             }
@@ -50,8 +50,6 @@ fun homeScreen(navController: NavHostController, homeViewModel: homeViewModel) {
 
 @Composable
 fun displayUserDetails(user: User) {
-    // Compose code to display user details
     Text(text = "User email: ${user.email}")
     Text(text = "Display Name: ${user.displayName}")
-    // Add more Text components or other UI elements to display additional user information
 }

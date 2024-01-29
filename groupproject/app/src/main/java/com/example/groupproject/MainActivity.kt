@@ -56,9 +56,9 @@ class MainActivity : ComponentActivity() {
             val firebaseApi = FirebaseApi()
             val navController = rememberNavController()
             val homeViewModel = homeViewModel(firebaseApi)
-            val tripsViewModel = tripsViewModel()
-            val profileViewModel = profileViewModel()
-            val settingsViewModel = settingViewModel()
+            val tripsViewModel = tripsViewModel(firebaseApi)
+            val profileViewModel = profileViewModel(firebaseApi)
+            val settingsViewModel = settingViewModel(firebaseApi)
             val authViewModel = AuthViewModel(firebaseApi)
 
             groupProjectTheme {

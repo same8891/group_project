@@ -1,4 +1,6 @@
 package com.example.groupproject.ui.profile
 
-class profileViewModel {
+import com.example.groupproject.data.FirebaseApi
+
+class profileViewModel(firebaseApi: FirebaseApi) {
 }

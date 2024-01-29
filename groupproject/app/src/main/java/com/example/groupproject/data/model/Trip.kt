@@ -5,7 +5,8 @@ data class Trip(
     val collaborators: List<String> = emptyList(),
     val description: String = "",
     val destinationList: List<String> = emptyList(),
-    val duration: String = "",
+    val startDate: String = "",
+    val endDate: String = "",
     val isPrivate: Boolean = false,
     val title: String = ""
 )

@@ -1,4 +1,6 @@
 package com.example.groupproject.ui.setting
 
-class settingViewModel {
+import com.example.groupproject.data.FirebaseApi
+
+class settingViewModel(firebaseApi: FirebaseApi) {
 }

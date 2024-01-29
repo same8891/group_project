@@ -12,6 +12,10 @@ class AuthViewModel(private val firebaseApi: FirebaseApi) : ViewModel() {
         // You can use Firebase Authentication methods to authenticate the user
         // Once authenticated, retrieve the user information using getUserByEmail
         firebaseApi.getUserByEmail(email) { user ->
+            if (user?.password != password) {
+                callback(null)
+                return@getUserByEmail
+            }
             callback(user)
         }
     }
@@ -21,7 +25,13 @@ class AuthViewModel(private val firebaseApi: FirebaseApi) : ViewModel() {
         // Perform Firebase registration here
         // You can use Firebase Authentication methods to create a new user
         // Once registered, save user information using saveUser
-        firebaseApi.saveUser(user, user.userId)
+        firebaseApi.saveUser(user, user.email)
         callback(true)
+    }
+
+    fun getUser(email: String, callback: (User?) -> Unit) {
+        firebaseApi.getUserByEmail(email) { user ->
+            callback(user)
+        }
     }
 }

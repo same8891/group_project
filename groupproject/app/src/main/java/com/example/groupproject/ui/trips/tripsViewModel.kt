@@ -1,4 +1,6 @@
 package com.example.groupproject.ui.trips
 
-class tripsViewModel {
+import com.example.groupproject.data.FirebaseApi
+
+class tripsViewModel(firebaseApi: FirebaseApi) {
 }
