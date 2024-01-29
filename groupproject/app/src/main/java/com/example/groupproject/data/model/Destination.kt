@@ -14,5 +14,5 @@ data class Destination(
     val name: String = "",
     val ownerOrganization: String = "",
     val price: Price = Price(),
-    val reviews: List<Review> = emptyList()
+    var reviews: List<Review> = emptyList()
 )

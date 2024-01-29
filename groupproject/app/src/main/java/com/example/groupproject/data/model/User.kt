@@ -7,7 +7,7 @@ data class User(
     val password: String = "",
     val saves: List<String> = emptyList(),
 
-    val trips: List<Trip> = emptyList(),
-    val profile: List<Profile> = emptyList(),
-    val reviews: List<Review> = emptyList()
+    var trips: List<Trip> = emptyList(),
+    var profile: List<Profile> = emptyList(),
+    var reviews: List<Review> = emptyList()
 )
