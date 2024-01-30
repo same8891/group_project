@@ -46,7 +46,9 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.yisheng.shoppingapplication.ui.home.ImageSlider
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
@@ -81,13 +83,13 @@ fun destinationDetailScreen(
         }
     } else {
         // Display the destination details once loaded
-        DestinationDetailsContent(destination = currentDestination, destinationDetailViewModel = destinationDetailViewModel)
+        DestinationDetailsContent(navController = navController, destination = currentDestination, destinationDetailViewModel = destinationDetailViewModel)
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
-private fun DestinationDetailsContent(destination: Destination, destinationDetailViewModel: destinationDetailViewModel) {
+private fun DestinationDetailsContent(navController: NavHostController, destination: Destination, destinationDetailViewModel: destinationDetailViewModel) {
     val averageRating = destination.reviews.map { it.rating }.average()
 
     LazyColumn(
@@ -132,6 +134,7 @@ private fun DestinationDetailsContent(destination: Destination, destinationDetai
 
                     // Tabs for Description, Reviews, and Map
                     DestinationTabs(
+                        navController = navController,
                         destination = destination,
                         destinationDetailViewModel = destinationDetailViewModel
                     )
@@ -144,7 +147,7 @@ private fun DestinationDetailsContent(destination: Destination, destinationDetai
 }
 
 @Composable
-private fun DestinationTabs(destination: Destination, destinationDetailViewModel: destinationDetailViewModel) {
+private fun DestinationTabs(navController: NavHostController, destination: Destination, destinationDetailViewModel: destinationDetailViewModel) {
     var selectedTabIndex by remember { mutableStateOf(0) }
 
     Column(
@@ -198,7 +201,7 @@ private fun DestinationTabs(destination: Destination, destinationDetailViewModel
         when (selectedTabIndex) {
             0 -> DestinationDescription(destination = destination)
             1 -> DestinationReviews(destination = destination, destinationDetailViewModel = destinationDetailViewModel)
-            2 -> DestinationMap(destination = destination)
+            2 -> DestinationMap(navController = navController, destination = destination)
             3 -> DestinationPictures(destination = destination)
         }
     }
@@ -241,40 +244,16 @@ private fun DestinationReviews(destination: Destination, destinationDetailViewMo
 }
 
 @Composable
-private fun DestinationMap(destination: Destination) {
-    var mapView: MapView? = null
-    AndroidView(
-        modifier = Modifier.fillMaxSize().height(300.dp),
-        factory = { context ->
-            mapView = MapView(context)
-            mapView!!
-        },
-        update = { mapView ->
-            mapView?.onCreate(Bundle())
-            mapView?.getMapAsync(object : OnMapReadyCallback {
-                override fun onMapReady(googleMap: GoogleMap) {
-                    val locationLatLng = getLocationFromAddress(destination.location)
-
-                    val markerOptions = MarkerOptions()
-                        .position(locationLatLng)
-                        .title(destination.name)
-                    googleMap.addMarker(markerOptions)
-
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(locationLatLng, 10f))
-                }
-            })
-        }
+private fun DestinationMap(navController: NavHostController, destination: Destination) {
+    val apiKey = "AIzaSyDS8L5B2IitXRFDYLCfSfWcyUydvCuCjt0"
+    val destinationLocation = destination.location
+    AsyncImage(
+        model = "https://maps.googleapis.com/maps/api/staticmap?size=512x512&maptype=roadmap" +
+                "&markers=size:mid%7Ccolor:red%7C" + destinationLocation +
+                "&key=" + apiKey,
+        contentDescription = "Translated description of what the image contains",
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(400.dp)
     )
-}
-
-// Helper function to convert an address (location string) to LatLng
-private fun getLocationFromAddress(location: String): LatLng {
-    // You may need to use a geocoding service here to convert the location string to LatLng
-    // For simplicity, let's assume it's already a valid LatLng string
-    val latLng = location.split(", ")
-//    val latitude = latLng[0].toDouble()
-//    val longitude = latLng[1].toDouble()
-    val latitude = 35.0
-    val longitude = 128.0
-    return LatLng(latitude, longitude)
 }
