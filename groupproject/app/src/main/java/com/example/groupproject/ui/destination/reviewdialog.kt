@@ -1,5 +1,7 @@
 package com.example.groupproject.ui.destination
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.widget.RatingBar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,6 +25,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,20 +39,27 @@ import androidx.compose.ui.graphics.ColorFilter.Companion.tint
 import androidx.compose.ui.semantics.SemanticsProperties.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.groupproject.data.FirebaseApi
 import com.example.groupproject.data.model.Destination
 import com.example.groupproject.ui.home.SortOrder
+import com.example.groupproject.ui.profile.profileViewModel
 
 
 @Composable
 fun reviewdialog(
+    isDestinationReviewed:Boolean = true,
+    rating: Int = 5,
+    reviewText: String = "",
     onDismiss: () -> Unit,
     onSubmit: (Int, String) -> Unit) {
-    var rating by remember { mutableStateOf(5) }
-    var reviewText by remember { mutableStateOf("") }
+    var rating by remember { mutableStateOf(rating) }
+    var reviewText by remember { mutableStateOf(reviewText) }
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
@@ -58,6 +69,20 @@ fun reviewdialog(
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
+            if(isDestinationReviewed == false) {
+                Text(
+                    text = "Add a review",
+                    modifier = Modifier.padding(start = 8.dp),
+                    fontSize = 20.sp
+                )
+            }
+            else{
+                Text(
+                    text = "Edit a review",
+                    modifier = Modifier.padding(start = 8.dp),
+                    fontSize = 20.sp
+                )
+            }
 //             Rating Bar
             RatingBar(
                 rating = rating,
@@ -97,11 +122,19 @@ fun reviewdialog(
                     Text("Cancel")
                 }
                 Spacer(modifier = Modifier.width(16.dp))
-                Button(onClick = {
-                    onSubmit(rating, reviewText)
-                    onDismiss()
-                }) {
-                    Text("Submit")
+                if(isDestinationReviewed == false) {
+                    Button(onClick = {
+                        onSubmit(rating, reviewText)
+                    }) {
+                        Text("Submit")
+                    }
+                }
+                else{
+                    Button(onClick = {
+                        onSubmit(rating, reviewText)
+                    }) {
+                        Text("Edit")
+                    }
                 }
             }
 
@@ -112,7 +145,8 @@ fun reviewdialog(
 fun RatingBar(rating: Int, onRatingChanged: (Int) -> Unit) {
     Row(
         modifier = Modifier
-            .width(200.dp),
+            .width(250.dp)
+            .padding(start = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         val activeColor = Color.Yellow
@@ -136,5 +170,5 @@ fun RatingBar(rating: Int, onRatingChanged: (Int) -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun preida() {
-    reviewdialog(onDismiss = {}, onSubmit = {rate,discription ->})
+    reviewdialog(onDismiss = {}, onSubmit = {ratinf,review->})
 }
