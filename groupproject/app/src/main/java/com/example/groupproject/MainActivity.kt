@@ -1,9 +1,11 @@
 package com.example.groupproject
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.padding
 import androidx.navigation.compose.NavHost
@@ -58,6 +60,7 @@ import com.example.groupproject.ui.trips.tripsViewModel
 
 class MainActivity : ComponentActivity() {
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -114,6 +117,7 @@ data class BottomNavigationItem(
 )
 
 
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomNavigationBar(navController: NavHostController,
@@ -175,7 +179,7 @@ fun BottomNavigationBar(navController: NavHostController,
                         }
                         NavigationBarItem(
                             selected = ifSelected,
-                                    onClick = {
+                            onClick = {
                                 selectedItemIndex = index
                                 // navController.navigate(item.title)
                             },

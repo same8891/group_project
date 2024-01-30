@@ -4,6 +4,8 @@
 package com.yisheng.shoppingapplication.ui.home
 
 import android.graphics.Bitmap
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -36,10 +38,13 @@ import coil.size.ViewSizeResolver
 import coil.transform.Transformation
 import coil.util.CoilUtils
 import kotlinx.coroutines.launch
+import kotlin.streams.toList
 
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
-fun ImageSlider(imageUrls: List<String>, modifier: Modifier = Modifier) {
-    var currentPage by remember { mutableStateOf(0) }
+fun ImageSlider(imageUrlList: List<String>, modifier: Modifier = Modifier, maxImageCount: Int = 5) {
+    var currentPage by remember { mutableIntStateOf(0) }
+    var imageUrls = imageUrlList.subList(0, maxImageCount)
 
     Box(
         modifier = modifier
