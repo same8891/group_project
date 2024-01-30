@@ -67,19 +67,20 @@ fun destinationDetailScreen(
     destinationDetailViewModel: destinationDetailViewModel
 ) {
     var destination by remember { mutableStateOf<Destination?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
 
     // Trigger fetching destination detail when the screen is first launched
     LaunchedEffect(destinationName) {
+        isLoading = true
         destinationDetailViewModel.getDestinationByName(destinationName) {
             destination = it
+            isLoading = false
         }
+
     }
 
-    // Fetch the destination detail from the ViewModel
-    val currentDestination = destinationDetailViewModel.getDestinationDetail()
-
     // Check if the destination is still loading
-    if (currentDestination == null) {
+    if (isLoading) {
         // You can display a loading indicator or some other UI here
         Box(
             modifier = Modifier
@@ -92,7 +93,7 @@ fun destinationDetailScreen(
         }
     } else {
         // Display the destination details once loaded
-        DestinationDetailsContent(navController = navController, destination = currentDestination, destinationDetailViewModel = destinationDetailViewModel)
+        DestinationDetailsContent(navController = navController, destination = destination!!, destinationDetailViewModel = destinationDetailViewModel)
     }
 }
 
@@ -264,6 +265,7 @@ private fun DestinationDescription(destination: Destination) {
         style = MaterialTheme.typography.body1,
         modifier = Modifier.padding(bottom = 16.dp)
     )
+
 }
 
 @Composable
