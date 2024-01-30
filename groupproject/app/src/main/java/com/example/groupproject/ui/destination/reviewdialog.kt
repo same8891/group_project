@@ -52,7 +52,7 @@ import com.example.groupproject.ui.profile.profileViewModel
 
 @Composable
 fun reviewdialog(
-    isDestinationReviewed:Boolean = true,
+    isDestinationReviewed:Boolean = false,
     rating: Int = 5,
     reviewText: String = "",
     onDismiss: () -> Unit,
