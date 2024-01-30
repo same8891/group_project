@@ -9,5 +9,6 @@ data class Review(
     val photos: List<String> = emptyList(),
     val rating: Int = 0,
     val timestamp: Timestamp? = null,
+    val likes: Int = 0,
     val userId: String = ""
 )

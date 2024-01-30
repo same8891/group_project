@@ -6,8 +6,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -21,11 +25,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.groupproject.data.model.Destination
+import com.yisheng.shoppingapplication.ui.home.ImageSlider
 
 @Composable
 fun destinationDetailScreen(
@@ -65,94 +72,106 @@ fun destinationDetailScreen(
 
 @Composable
 private fun DestinationDetailsContent(destination: Destination) {
-    // Your UI layout for displaying destination details goes here
-    // You can use Jetpack Compose functions like Column, Row, Text, etc.
+    val averageRating = destination.reviews.map { it.rating }.average()
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text(
-            text = destination.name,
-            style = MaterialTheme.typography.h5,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        // Displaying basic details
-        Text(
-            text = "Location: ${destination.location}",
-            style = MaterialTheme.typography.body1,
-            modifier = Modifier.padding(bottom = 4.dp)
-        )
-
-        Text(
-            text = "Description: ${destination.description}",
-            style = MaterialTheme.typography.body1,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        // Displaying images
-        destination.images.forEach { imageUrl ->
-            AsyncImage(
-                model = imageUrl,
-                contentDescription = "Destination Image",
-                contentScale = ContentScale.Crop,
+        item {
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
-                    .clip(shape = MaterialTheme.shapes.medium)
-                    .padding(bottom = 8.dp)
-            )
-        }
-
-        // Displaying activity list
-        if (destination.activityList.isNotEmpty()) {
-            Text(
-                text = "Activities:",
-                style = MaterialTheme.typography.subtitle1,
-                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
-            )
-            destination.activityList.forEach { activity ->
-                Text(
-                    text = " - $activity",
-                    style = MaterialTheme.typography.body1,
-                    modifier = Modifier.padding(bottom = 4.dp)
+                    .padding(16.dp),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 6.dp
                 )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    // Displaying images
+                    ImageSlider(
+                        imageUrls = destination.images,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 300.dp)
+                    )
+
+                    // Average rating
+                    Text(
+                        text = "Average Rating: ${averageRating}",
+                        style = MaterialTheme.typography.h6,
+                        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                    )
+
+                    Text(
+                        text = destination.name,
+                        style = MaterialTheme.typography.h5,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    // Displaying basic details
+                    Text(
+                        text = "Location: ${destination.location}",
+                        style = MaterialTheme.typography.body1,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+
+                    Text(
+                        text = "Description: ${destination.description}",
+                        style = MaterialTheme.typography.body1,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    // Displaying activity list
+                    if (destination.activityList.isNotEmpty()) {
+                        Text(
+                            text = "Activities:",
+                            style = MaterialTheme.typography.subtitle1,
+                            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                        )
+                        destination.activityList.forEach { activity ->
+                            Text(
+                                text = " - $activity",
+                                style = MaterialTheme.typography.body1,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
+                    }
+
+                    // Displaying price information
+                    Text(
+                        text = "Price: ${destination.price.value} ${destination.price.currency}",
+                        style = MaterialTheme.typography.body1,
+                        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                    )
+
+                    // Displaying likes
+                    Text(
+                        text = "Likes: ${destination.likes}",
+                        style = MaterialTheme.typography.body1,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    // Displaying reviews
+                    if (destination.reviews.isNotEmpty()) {
+                        Text(
+                            text = "Reviews:",
+                            style = MaterialTheme.typography.subtitle1,
+                            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                        )
+                        destination.reviews.forEach { review ->
+                            reviewCard(review = review)
+                        }
+                    }
+
+                    // Add other destination details components here based on your requirements
+                }
             }
         }
-
-        // Displaying price information
-        Text(
-            text = "Price: ${destination.price.value} ${destination.price.currency}",
-            style = MaterialTheme.typography.body1,
-            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
-        )
-
-        // Displaying likes
-        Text(
-            text = "Likes: ${destination.likes}",
-            style = MaterialTheme.typography.body1,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        // Displaying reviews
-        if (destination.reviews.isNotEmpty()) {
-            Text(
-                text = "Reviews:",
-                style = MaterialTheme.typography.subtitle1,
-                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
-            )
-            destination.reviews.forEach { review ->
-                // You can customize how you want to display each review
-                Text(
-                    text = " - ${review.rating} stars: ${review.description}",
-                    style = MaterialTheme.typography.body1,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
-            }
-        }
-
-        // Add other destination details components here based on your requirements
     }
 }
