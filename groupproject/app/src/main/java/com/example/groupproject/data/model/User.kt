@@ -3,7 +3,7 @@ package com.example.groupproject.data.model
 data class User(
     var userId: String = "",
     val currency: String = "",
-    val displayName: String = "",
+    var displayName: String = "",
     val email: String = "",
     val password: String = "",
     val saves: List<String> = emptyList(),

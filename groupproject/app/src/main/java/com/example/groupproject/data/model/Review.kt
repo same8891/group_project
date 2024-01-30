@@ -4,11 +4,11 @@ import com.google.firebase.Timestamp
 
 data class Review(
     var reviewId: String = "",
-    val description: String = "",
+    var description: String = "",
     val destination: String = "",
     var isPublic: Boolean = true,
     val photos: List<String> = emptyList(),
-    val rating: Int = 0,
+    var rating: Int = 0,
     val timestamp: Timestamp? = null,
     val likes: Int = 0,
     val userId: String = "",

@@ -6,9 +6,6 @@ import androidx.lifecycle.ViewModel
 import com.example.groupproject.data.FirebaseApi
 import com.example.groupproject.data.model.Profile
 import com.example.groupproject.data.model.User
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
