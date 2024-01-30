@@ -66,12 +66,12 @@ fun destinationDetailScreen(
         }
     } else {
         // Display the destination details once loaded
-        DestinationDetailsContent(destination = currentDestination)
+        DestinationDetailsContent(destination = currentDestination, destinationDetailViewModel = destinationDetailViewModel)
     }
 }
 
 @Composable
-private fun DestinationDetailsContent(destination: Destination) {
+private fun DestinationDetailsContent(destination: Destination, destinationDetailViewModel: destinationDetailViewModel) {
     val averageRating = destination.reviews.map { it.rating }.average()
 
     LazyColumn(
@@ -165,7 +165,7 @@ private fun DestinationDetailsContent(destination: Destination) {
                             modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
                         )
                         destination.reviews.forEach { review ->
-                            reviewCard(review = review)
+                            reviewCard(review = review, destinationDetailViewModel = destinationDetailViewModel)
                         }
                     }
 

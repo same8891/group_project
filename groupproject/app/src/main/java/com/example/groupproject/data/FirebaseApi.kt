@@ -1,11 +1,13 @@
 package com.example.groupproject.data
 
+import android.util.Log
 import com.example.groupproject.data.model.Destination
 import com.example.groupproject.data.model.Feedback
 import com.example.groupproject.data.model.Profile
 import com.example.groupproject.data.model.Review
 import com.example.groupproject.data.model.Trip
 import com.example.groupproject.data.model.User
+import com.google.firebase.firestore.Filter.equalTo
 import com.google.firebase.firestore.FirebaseFirestore
 
 class FirebaseApi {
@@ -372,6 +374,10 @@ class FirebaseApi {
 
                 for (document in querySnapshot) {
                     val feedback = document.toObject(Feedback::class.java)
+
+                    // 将文档的ID赋值给feedbackId
+                    feedback.feedbackId = document.id
+
                     feedbackList.add(feedback)
                 }
                 callback(feedbackList)
@@ -413,6 +419,40 @@ class FirebaseApi {
             }
             .addOnFailureListener {
                 println("Error deleting feedback: $it")
+            }
+    }
+
+    fun updateReviewLikes(destination: Destination, userId: String, likes: Int) {
+        // 使用 Firestore 查询找到具有特定 userId 的评论
+        db.collection("Destination")
+            .document(destination.name)
+            .collection("reviews")
+            .whereEqualTo("userId", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                // 检查是否存在匹配的评论
+                if (!querySnapshot.isEmpty) {
+                    val documentSnapshot = querySnapshot.documents[0]
+                    val reviewRef = documentSnapshot.reference
+
+                    // 更新点赞数
+                    reviewRef.update("likes", likes)
+                        .addOnSuccessListener {
+                            // 更新成功
+                            println("点赞更新成功")
+                        }
+                        .addOnFailureListener { e ->
+                            // 更新失败
+                            println("点赞更新失败: $e")
+                        }
+                } else {
+                    // 没有找到匹配的评论
+                    println("找不到匹配的评论")
+                }
+            }
+            .addOnFailureListener { e ->
+                // 查询失败
+                println("查询评论失败: $e")
             }
     }
 }

@@ -22,4 +22,12 @@ class destinationDetailViewModel(private val firebaseApi: FirebaseApi) : ViewMod
     fun getDestinationDetail(): Destination? {
         return destination
     }
+
+    fun updateReviewLikes(userId: String, likes: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            destination?.let {
+                firebaseApi.updateReviewLikes(it, userId, likes)
+            }
+        }
+    }
 }
