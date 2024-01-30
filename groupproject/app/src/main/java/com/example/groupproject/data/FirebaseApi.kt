@@ -7,8 +7,11 @@ import com.example.groupproject.data.model.Profile
 import com.example.groupproject.data.model.Review
 import com.example.groupproject.data.model.Trip
 import com.example.groupproject.data.model.User
+import com.google.firebase.firestore.FieldPath
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Filter.equalTo
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 
 class FirebaseApi {
 
@@ -88,7 +91,7 @@ class FirebaseApi {
                             .addOnSuccessListener { tripsSnapshot ->
                                 val tripsList = tripsSnapshot.toObjects(Trip::class.java)
                                 user.trips = tripsList
-
+                                user.userId = userDocument.id
                                 // Fetch Profile subcollection
                                 userDocument.reference.collection("profile")
                                     .get()
@@ -147,7 +150,7 @@ class FirebaseApi {
                         .addOnSuccessListener { tripsSnapshot ->
                             val tripsList = tripsSnapshot.toObjects(Trip::class.java)
                             user?.trips = tripsList
-
+                            user?.userId = userDocument.id
                             // Fetch Profile subcollection
                             userRef.collection("profile")
                                 .get()
@@ -209,13 +212,11 @@ class FirebaseApi {
             .addOnSuccessListener { querySnapshot ->
                 if (!querySnapshot.isEmpty) {
                     val destination = querySnapshot.documents[0].toObject(Destination::class.java)
-
                     // Fetch Reviews subcollection
                     if (destination != null) {
                         val destinationId = querySnapshot.documents[0].id
                         val reviewsRef = db.collection("Destination").document(destinationId)
                             .collection("reviews")
-
                         reviewsRef.get()
                             .addOnSuccessListener { reviewsSnapshot ->
                                 val reviewsList = reviewsSnapshot.toObjects(Review::class.java)
@@ -249,7 +250,6 @@ class FirebaseApi {
             .set(destination)
             .addOnSuccessListener {
                 println("Destination saved successfully!")
-
                 // Save Reviews subcollection
                 destination.reviews.forEachIndexed { index, review ->
                     db.collection("Destination")
@@ -273,7 +273,6 @@ class FirebaseApi {
     // Read destination
     fun getDestination(destinationId: String, callback: (Destination?) -> Unit) {
         val destinationRef = db.collection("Destination").document(destinationId)
-
         destinationRef.get()
             .addOnSuccessListener { documentSnapshot ->
                 if (documentSnapshot.exists()) {
@@ -285,7 +284,7 @@ class FirebaseApi {
                         .addOnSuccessListener { reviewsSnapshot ->
                             val reviewsList = reviewsSnapshot.toObjects(Review::class.java)
                             destination?.reviews = reviewsList
-
+                            destination?.destinationId = documentSnapshot.id
                             callback(destination)
                         }
                         .addOnFailureListener {
@@ -321,7 +320,6 @@ class FirebaseApi {
             .get()
             .addOnSuccessListener { querySnapshot ->
                 val destinationList = mutableListOf<Destination>()
-
                 for (document in querySnapshot) {
                     val destination = document.toObject(Destination::class.java)
 
@@ -371,13 +369,10 @@ class FirebaseApi {
             .get()
             .addOnSuccessListener { querySnapshot ->
                 val feedbackList = mutableListOf<Feedback>()
-
                 for (document in querySnapshot) {
                     val feedback = document.toObject(Feedback::class.java)
-
                     // 将文档的ID赋值给feedbackId
                     feedback.feedbackId = document.id
-
                     feedbackList.add(feedback)
                 }
                 callback(feedbackList)
@@ -453,6 +448,250 @@ class FirebaseApi {
             .addOnFailureListener { e ->
                 // 查询失败
                 println("查询评论失败: $e")
+            }
+    }
+
+    fun updateReview(review: Review, destinationId: String) {
+        // 使用 Firestore 查询找到具有特定 userId 的评论
+        db.collection("Destination")
+            .document(destinationId)
+            .collection("reviews")
+            .whereEqualTo("userId", review.userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                // 检查是否存在匹配的评论
+                if (!querySnapshot.isEmpty) {
+                    val documentSnapshot = querySnapshot.documents[0]
+                    val reviewRef = documentSnapshot.reference
+                    // 更新评论
+                    reviewRef.set(review)
+                        .addOnSuccessListener {
+                            // 更新成功
+                            println("评论更新成功")
+                        }
+                        .addOnFailureListener { e ->
+                            // 更新失败
+                            println("评论更新失败: $e")
+                        }
+                } else {
+                    // 没有找到匹配的评论
+                    println("找不到匹配的评论")
+                }
+            }
+            .addOnFailureListener { e ->
+                // 查询失败
+                println("查询评论失败: $e")
+            }
+    }
+
+
+    fun addReview(review: Review, destinationId: String) {
+        // 保存评论数据
+        db.collection("Destination")
+            .document(destinationId)
+            .collection("reviews")
+            .add(review)
+            .addOnSuccessListener {
+                println("评论保存成功")
+            }
+            .addOnFailureListener {
+                println("评论保存失败: $it")
+            }
+    }
+
+    fun deleteReview(reviewId: String, destinationId: String) {
+        // 删除评论
+        db.collection("Destination")
+            .document(destinationId)
+            .collection("reviews")
+            .document(reviewId)
+            .delete()
+            .addOnSuccessListener {
+                println("评论删除成功")
+            }
+            .addOnFailureListener {
+                println("评论删除失败: $it")
+            }
+    }
+
+    fun addUserSaves(userId: String, destinationId: String) {
+        // 获取用户的收藏列表
+        db.collection("User")
+            .document(userId)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                val user = documentSnapshot.toObject(User::class.java)
+                if (user != null) {
+                    val saves = user.saves.toMutableList()
+                    saves.add(destinationId)
+                    // 更新用户的收藏列表
+                    db.collection("User")
+                        .document(userId)
+                        .update("saves", saves)
+                        .addOnSuccessListener {
+                            println("用户收藏更新成功")
+                        }
+                        .addOnFailureListener {
+                            println("用户收藏更新失败: $it")
+                        }
+                }
+            }
+            .addOnFailureListener {
+                println("获取用户收藏失败: $it")
+            }
+    }
+
+
+    fun removeUserSaves(userId: String, destinationId: String) {
+        // 获取用户的收藏列表
+        db.collection("User")
+            .document(userId)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                val user = documentSnapshot.toObject(User::class.java)
+                if (user != null) {
+                    val saves = user.saves.toMutableList()
+                    saves.remove(destinationId)
+                    // 更新用户的收藏列表
+                    db.collection("User")
+                        .document(userId)
+                        .update("saves", saves)
+                        .addOnSuccessListener {
+                            println("用户收藏更新成功")
+                        }
+                        .addOnFailureListener {
+                            println("用户收藏更新失败: $it")
+                        }
+                }
+            }
+            .addOnFailureListener {
+                println("获取用户收藏失败: $it")
+            }
+    }
+
+    fun updateUserCurrency(userId: String, currency: String) {
+        // 更新用户的货币
+        db.collection("User")
+            .document(userId)
+            .update("currency", currency)
+            .addOnSuccessListener {
+                println("用户货币更新成功")
+            }
+            .addOnFailureListener {
+                println("用户货币更新失败: $it")
+            }
+    }
+
+    fun saveProfile(userId: String, newProfile: Profile) {
+        // 获取用户文档的引用
+        val userProfiles = db.collection("User").document(userId).collection("profile")
+        // 获取用户的所有个人资料
+        userProfiles.get()
+            .addOnSuccessListener { querySnapshot ->
+                val profiles = querySnapshot.toObjects(Profile::class.java)
+                // 如果用户没有个人资料，则直接保存新的个人资料
+                if (profiles.isEmpty()) {
+                    userProfiles.add(newProfile)
+                        .addOnSuccessListener {
+                            println("个人资料保存成功")
+                        }
+                        .addOnFailureListener {
+                            println("个人资料保存失败: $it")
+                        }
+                } else {
+                    // 如果用户已经有个人资料，则更新第一个个人资料
+                    val profileRef = userProfiles.document(querySnapshot.documents[0].id)
+                    profileRef.set(newProfile)
+                        .addOnSuccessListener {
+                            println("个人资料更新成功")
+                        }
+                        .addOnFailureListener {
+                            println("个人资料更新失败: $it")
+                        }
+                }
+            }
+            .addOnFailureListener {
+                println("获取个人资料失败: $it")
+            }
+    }
+
+    fun addTrip(userId: String, newTrip: Trip) {
+        // 获取用户文档的引用
+        val userTrips = db.collection("User").document(userId).collection("trips")
+        // 保存新的旅行
+        userTrips.add(newTrip)
+            .addOnSuccessListener {
+                println("旅行保存成功")
+            }
+            .addOnFailureListener {
+                println("旅行保存失败: $it")
+            }
+    }
+
+    fun deleteTrip(userId: String, tripId: String) {
+        // 获取用户文档的引用
+        val userTrips = db.collection("User").document(userId).collection("trips")
+        // 删除旅行
+        userTrips.document(tripId)
+            .delete()
+            .addOnSuccessListener {
+                println("旅行删除成功")
+            }
+            .addOnFailureListener {
+                println("旅行删除失败: $it")
+            }
+    }
+
+    fun updateTrip(userId: String, tripId: String, newTrip: Trip) {
+        // 获取用户文档的引用
+        val userTrips = db.collection("User").document(userId).collection("trips")
+        // 更新旅行
+        userTrips.document(tripId)
+            .set(newTrip)
+            .addOnSuccessListener {
+                println("旅行更新成功")
+            }
+            .addOnFailureListener {
+                println("旅行更新失败: $it")
+            }
+    }
+
+    fun changeUserPassword(userId: String, newPassword: String) {
+        // 更新用户的密码
+        db.collection("User")
+            .document(userId)
+            .update("password", newPassword)
+            .addOnSuccessListener {
+                println("用户密码更新成功")
+            }
+            .addOnFailureListener {
+                println("用户密码更新失败: $it")
+            }
+    }
+
+    fun changeUserEmail(userId: String, newEmail: String) {
+        // 更新用户的邮箱
+        db.collection("User")
+            .document(userId)
+            .update("email", newEmail)
+            .addOnSuccessListener {
+                println("用户邮箱更新成功")
+            }
+            .addOnFailureListener {
+                println("用户邮箱更新失败: $it")
+            }
+    }
+
+    fun changeUserDisplayName(userId: String, newDisplayName: String) {
+        // 更新用户的显示名称
+        db.collection("User")
+            .document(userId)
+            .update("displayName", newDisplayName)
+            .addOnSuccessListener {
+                println("用户显示名称更新成功")
+            }
+            .addOnFailureListener {
+                println("用户显示名称更新失败: $it")
             }
     }
 }

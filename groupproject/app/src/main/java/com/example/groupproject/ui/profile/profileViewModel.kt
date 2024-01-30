@@ -2,6 +2,7 @@ package com.example.groupproject.ui.profile
 
 import androidx.lifecycle.ViewModel
 import com.example.groupproject.data.FirebaseApi
+import com.example.groupproject.data.model.Profile
 import com.example.groupproject.data.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,4 +31,7 @@ class profileViewModel(private val firebaseApi: FirebaseApi) : ViewModel() {
         firebaseApi.saveUser(user, userId)
     }
 
+    fun updateProfile(userId: String, profile: Profile) {
+        firebaseApi.saveProfile(userId, profile)
+    }
 }

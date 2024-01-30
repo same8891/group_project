@@ -55,6 +55,18 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             user?.let { displayUser(it) }
+            Button(
+                onClick = {
+                    val profile = user?.profile?.get(0)
+                    if (profile != null) {
+                        profile.fullName = "New Name"
+                        profileViewModel.updateProfile(user?.userId ?: "", profile)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "Edit Profile")
+            }
         }
     }
 }
