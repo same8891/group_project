@@ -38,6 +38,7 @@ import android.provider.MediaStore
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.remember
 
@@ -83,52 +84,59 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
     Surface(
         modifier = Modifier.fillMaxSize(),
     ) {
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(16.dp)
         ) {
-            user?.let { displayUser(it) }
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    user?.let { displayUser(it) }
 
 
+                    // 添加文本框来编辑 Full Name
+                    TextField(
+                        value = fullNameState,
+                        onValueChange = {
+                            fullNameState = it
+                        },
+                        label = { Text("Full Name") }, // 可选的标签
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-            // 添加文本框来编辑 Full Name
-            TextField(
-                value = fullNameState,
-                onValueChange = {
-                    fullNameState = it
-                },
-                label = { Text("Full Name") }, // 可选的标签
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Button(
-                onClick = {
-                    // 更新 Full Name
-                    val profile = user?.profile?.get(0)
-                    if (profile != null) {
-                        profile.fullName = fullNameState
-                        profileViewModel.updateProfile(user?.userId ?: "", profile)
+                    Button(
+                        onClick = {
+                            // 更新 Full Name
+                            val profile = user?.profile?.get(0)
+                            if (profile != null) {
+                                profile.fullName = fullNameState
+                                profileViewModel.updateProfile(user?.userId ?: "", profile)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(text = "Edit Profile Name")
                     }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "Edit Profile Name")
-            }
 
-            // 添加按钮来选择图片
-            Button(
-                onClick = {
-                    // 启动选择图片的操作
-                    getContent.launch("image/*")
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "Select Image")
+                    // 添加按钮来选择图片
+                    Button(
+                        onClick = {
+                            // 启动选择图片的操作
+                            getContent.launch("image/*")
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(text = "Select Image")
+                    }
+                    // 显示返回的URL
+                    Text(text = "Image URL: ${uploadImageUrl.value}")
+                }
             }
-            // 显示返回的URL
-            Text(text = "Image URL: ${uploadImageUrl.value}")
         }
     }
 }
