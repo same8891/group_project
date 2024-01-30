@@ -53,36 +53,6 @@ import com.example.groupproject.data.model.User
 import com.example.groupproject.ui.destination.destinationCard
 import java.util.jar.Attributes.Name
 
-@Composable
-fun HomeScreen(navController: NavHostController, homeViewModel: homeViewModel) {
-    // Fetch all destinations when the screen is created
-    homeViewModel.getAllDestinations()
-
-    // Observe the destinations LiveData
-    val destinations = homeViewModel.destinations.value
-
-    // Display the list of destinations
-    LazyColumn {
-        items(destinations) { destination ->
-            destinationCard(destination = destination, navController = navController)
-        }
-    }
-}
-
-@Composable
-fun DestinationItem(destination: Destination) {
-    // Display each destination item
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Text(text = "Name: ${destination.name}")
-        Text(text = "Location: ${destination.location}")
-        Text(text = "Description: ${destination.description}")
-        Text(text = "Reviews: ${destination.reviews.toString()}")
-    }
-}
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun homeScreen(navController: NavController,homeViewModel: homeViewModel) {
@@ -91,8 +61,65 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel) {
     var selectedCheckBoxItems by remember { mutableStateOf<List<String>>(emptyList()) }
     var selectedOption1 by remember { mutableStateOf(SortOrder.ASCENDING_NAME) }
     var selectedOption2 by remember { mutableStateOf(SortOrder.Empty) }
+    val checkedItemsRem = remember { mutableStateListOf<Boolean>(false, false, false, false) }
     homeViewModel.getAllDestinations()
     val destinations = homeViewModel.destinations.value
+    var filteredDestinations: List<Destination>
+    if(selectedOption1 == SortOrder.ASCENDING_NAME && selectedOption2 == SortOrder.Empty)
+    {
+        filteredDestinations = destinations.filter { destination ->
+            val nameMatch = destination.name.contains(searchInput, ignoreCase = true)
+            val locationMatch = destination.location.contains(searchInput, ignoreCase = true)
+            val checkBoxMatch = selectedCheckBoxItems.isEmpty() || selectedCheckBoxItems.all { it in destination.tags}
+            (nameMatch || locationMatch) && checkBoxMatch
+        }.sortedBy { it.name }
+    }
+    else if (selectedOption1 == SortOrder.DESCENDING_NAME && selectedOption2 == SortOrder.Empty)
+    {
+        filteredDestinations = destinations.filter { destination ->
+            val nameMatch = destination.name.contains(searchInput, ignoreCase = true)
+            val locationMatch = destination.location.contains(searchInput, ignoreCase = true)
+            val checkBoxMatch = selectedCheckBoxItems.isEmpty() || selectedCheckBoxItems.all { it in destination.tags}
+            (nameMatch || locationMatch) && checkBoxMatch
+        }.sortedByDescending { it.name }
+    }
+    else if(selectedOption1 == SortOrder.ASCENDING_NAME && selectedOption2 == SortOrder.Likes)
+    {
+        filteredDestinations = destinations.filter { destination ->
+            val nameMatch = destination.name.contains(searchInput, ignoreCase = true)
+            val locationMatch = destination.location.contains(searchInput, ignoreCase = true)
+            val checkBoxMatch = selectedCheckBoxItems.isEmpty() || selectedCheckBoxItems.all { it in destination.tags}
+            (nameMatch || locationMatch) && checkBoxMatch
+        }.sortedWith(compareBy( { -it.likes }, {it.name}))
+    }
+    else if(selectedOption1 == SortOrder.DESCENDING_NAME && selectedOption2 == SortOrder.Likes)
+    {
+        filteredDestinations = destinations.filter { destination ->
+            val nameMatch = destination.name.contains(searchInput, ignoreCase = true)
+            val locationMatch = destination.location.contains(searchInput, ignoreCase = true)
+            val checkBoxMatch = selectedCheckBoxItems.isEmpty() || selectedCheckBoxItems.all { it in destination.tags}
+            (nameMatch || locationMatch) && checkBoxMatch
+        }.sortedWith(compareBy<Destination>( { -it.likes }).thenByDescending { it.name })
+    }
+    else if(selectedOption1 == SortOrder.ASCENDING_NAME && selectedOption2 == SortOrder.RATING)
+    {
+        filteredDestinations = destinations.filter { destination ->
+            val nameMatch = destination.name.contains(searchInput, ignoreCase = true)
+            val locationMatch = destination.location.contains(searchInput, ignoreCase = true)
+            val checkBoxMatch = selectedCheckBoxItems.isEmpty() || selectedCheckBoxItems.all { it in destination.tags}
+            (nameMatch || locationMatch) && checkBoxMatch
+        }.sortedWith(compareBy( { -it.reviews.map { it.rating }.average() }, {it.name}))
+    }
+    else
+    {
+        filteredDestinations = destinations.filter { destination ->
+            val nameMatch = destination.name.contains(searchInput, ignoreCase = true)
+            val locationMatch = destination.location.contains(searchInput, ignoreCase = true)
+            val checkBoxMatch = selectedCheckBoxItems.isEmpty() || selectedCheckBoxItems.all { it in destination.tags}
+            (nameMatch || locationMatch) && checkBoxMatch
+        }.sortedWith(compareBy<Destination>( { -it.reviews.map { it.rating }.average() }).thenByDescending { it.name })
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -102,12 +129,14 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel) {
         Log.d("selectoption","$selectedOption1")
         Log.d("selectoption","$selectedOption2")
         if (State == 1) {
-            SearchBar{input->
+            SearchBar(searchInput){input->
                 searchInput = input
             }
         }
         else if (State == 2){
-            CheckBoxList{ items ->
+            CheckBoxList(checkedItemsRem.toList()){updatecheck,items ->
+                checkedItemsRem.clear()
+                checkedItemsRem.addAll(updatecheck)
                 selectedCheckBoxItems = items
             }
         }
@@ -147,7 +176,7 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel) {
             }
         }
         LazyColumn {
-            items(destinations.sortedBy {it.name}) { destination ->
+            items(filteredDestinations) { destination ->
                 destinationCard(destination = destination, navController = navController)
             }
         }
@@ -160,12 +189,12 @@ fun homepre() {
     var selectedOption1 by remember { mutableStateOf(SortOrder.ASCENDING_NAME) }
     var selectedOption2 by remember { mutableStateOf(SortOrder.Empty) }
 //    RadioGroup(SortOrder.ASCENDING_NAME,SortOrder.Empty,onOptionSelected = {s1,s2-> })
-    CheckBoxList{}
+//    CheckBoxList{}
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchBar(onSearch: (String) -> Unit) {
-    var input by remember { mutableStateOf("") }
+fun SearchBar(searchinput: String,onSearch: (String) -> Unit) {
+    var input by remember { mutableStateOf(searchinput) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -187,7 +216,9 @@ fun SearchBar(onSearch: (String) -> Unit) {
         }
         TextField(
             value = input,
-            onValueChange = { input = it },
+            onValueChange = {
+                input = it
+                onSearch.invoke(input)},
             label = { Text("Search") },
             modifier = Modifier
                 .fillMaxWidth()
@@ -195,13 +226,17 @@ fun SearchBar(onSearch: (String) -> Unit) {
     }
 }
 @Composable
-fun CheckBoxList(onFilterClick: (List<String>) -> Unit) {
+fun CheckBoxList(checkprev: List<Boolean>,onFilterClick: (List<Boolean>,List<String>) -> Unit) {
     val items = listOf("Nature", "Historic", "Music", "Culture")
     val checkedItems = remember { mutableStateListOf<Boolean>(false, false, false, false) }
     var add_row = false
     val screenWidth = LocalConfiguration.current.screenWidthDp
     var length = 0
     var count = 0
+    LaunchedEffect(key1 = true) {
+        checkedItems.clear()
+        checkedItems.addAll(checkprev)
+    }
     Column(modifier = Modifier
         .height(90.dp)
         .width(screenWidth.dp)
@@ -249,7 +284,7 @@ fun CheckBoxList(onFilterClick: (List<String>) -> Unit) {
                 }
                 Spacer(modifier = Modifier.width((screenWidth- 140 - 120 *(4-count)).dp))
                 Button(
-                    onClick = { onFilterClick(getSelectedItems(items, checkedItems)) },
+                    onClick = { onFilterClick(checkedItems.toList(),getSelectedItems(items, checkedItems)) },
                     modifier = Modifier
                         .width(100.dp)
                 )
@@ -260,7 +295,7 @@ fun CheckBoxList(onFilterClick: (List<String>) -> Unit) {
         }
         else{
             Button(
-                onClick = { onFilterClick(getSelectedItems(items, checkedItems)) },
+                onClick = { onFilterClick(checkedItems.toList(),getSelectedItems(items, checkedItems)) },
                 modifier = Modifier
                     .width(100.dp).align(Alignment.End)
             )

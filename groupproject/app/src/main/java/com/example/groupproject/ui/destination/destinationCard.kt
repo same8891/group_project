@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
@@ -81,13 +82,13 @@ fun destinationCard(navController: NavController, destination: Destination) {
             ) {
                 Icon(
                     imageVector = Icons.Default.Star,
-                    contentDescription = "Search",
+                    contentDescription = "rating",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
                 )
 
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "5")
+                Text(text = destination.reviews.map { it.rating }.average().toString())
 
                 Spacer(modifier = Modifier.width(16.dp))
 
@@ -101,6 +102,14 @@ fun destinationCard(navController: NavController, destination: Destination) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(text = destination.location)
                 Spacer(modifier = Modifier.width(16.dp))
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = "Search",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(text = destination.likes.toString())
 
             }
             Row(
