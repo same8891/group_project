@@ -51,20 +51,27 @@ import androidx.navigation.compose.rememberNavController
 import com.example.groupproject.data.model.Destination
 import com.example.groupproject.data.model.User
 import com.example.groupproject.ui.destination.destinationCard
+import com.example.groupproject.ui.profile.profileViewModel
 import java.util.jar.Attributes.Name
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun homeScreen(navController: NavController,homeViewModel: homeViewModel) {
+fun homeScreen(navController: NavController,homeViewModel: homeViewModel,profileViewModel: profileViewModel) {
     var State by remember { mutableStateOf(1) }
     var searchInput by remember { mutableStateOf("") }
     var selectedCheckBoxItems by remember { mutableStateOf<List<String>>(emptyList()) }
     var selectedOption1 by remember { mutableStateOf(SortOrder.ASCENDING_NAME) }
     var selectedOption2 by remember { mutableStateOf(SortOrder.Empty) }
     val checkedItemsRem = remember { mutableStateListOf<Boolean>(false, false, false, false) }
-    homeViewModel.getAllDestinations()
     val destinations = homeViewModel.destinations.value
+    val context = navController.context
     var filteredDestinations: List<Destination>
+    val sharedPref: SharedPreferences = context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
+    val userEmail = sharedPref.getString("email","") ?: ""
+    LaunchedEffect(userEmail){
+        profileViewModel.getUser(userEmail)
+        homeViewModel.getAllDestinations()
+    }
     if(selectedOption1 == SortOrder.ASCENDING_NAME && selectedOption2 == SortOrder.Empty)
     {
         filteredDestinations = destinations.filter { destination ->
@@ -297,7 +304,8 @@ fun CheckBoxList(checkprev: List<Boolean>,onFilterClick: (List<Boolean>,List<Str
             Button(
                 onClick = { onFilterClick(checkedItems.toList(),getSelectedItems(items, checkedItems)) },
                 modifier = Modifier
-                    .width(100.dp).align(Alignment.End)
+                    .width(100.dp)
+                    .align(Alignment.End)
             )
             {
                 Text("Filter")
