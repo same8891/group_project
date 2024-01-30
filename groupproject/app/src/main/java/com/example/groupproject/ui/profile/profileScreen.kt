@@ -277,7 +277,7 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                 )
             }
             item {
-                user?.reviews?.forEach {
+                user?.reviews?.forEachIndexed { index, it ->
                     var rating by remember { mutableIntStateOf(it.rating) }
                     var description by remember { mutableStateOf(it.description) }
                     var reviewDialog by remember { mutableStateOf(false) }
@@ -463,7 +463,7 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                                 description = dialogDescription
                                                 it.rating = dialogRating
                                                 it.description = dialogDescription
-                                                profileViewModel.updateUser(user!!, it.userId)
+                                                profileViewModel.updateUser(user!!, user!!.email)
                                                 reviewDialog = false
                                             }
                                         ) {
@@ -512,6 +512,11 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                     confirmButton = {
                                         Button(
                                             onClick = {
+
+                                                Log.d("TAG", "${user!!.reviews}")
+                                                user?.reviews?.removeAt(index)
+                                                profileViewModel.updateUser(user!!, user!!.email)
+                                                Log.d("TAG", "${user!!.reviews}")
                                                 reviewDeleteDialog = false
                                             }
                                         ) {

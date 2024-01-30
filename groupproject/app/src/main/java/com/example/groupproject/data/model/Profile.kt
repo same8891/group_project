@@ -1,7 +1,7 @@
 package com.example.groupproject.data.model
 
 data class Profile(
-    val profileId: String = "",
+    var profileId: String = "",
     val aboutYou: String = "",
     var fullName: String = "",
     val joinDate: String = "",

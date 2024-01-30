@@ -36,7 +36,7 @@ class FirebaseApi {
                     db.collection("User")
                         .document(userId)
                         .collection("trips")
-                        .document("trip_$index")
+                        .document(trip.tripId)
                         .set(trip)
                         .addOnSuccessListener {
                             println("Trip $index saved successfully!")
@@ -45,13 +45,12 @@ class FirebaseApi {
                             println("Error saving Trip $index: $it")
                         }
                 }
-
                 // Save Profile subcollection
                 user.profile.forEachIndexed { index, profile ->
                     db.collection("User")
                         .document(userId)
                         .collection("profile")
-                        .document("profile_$index")
+                        .document(profile.profileId)
                         .set(profile)
                         .addOnSuccessListener {
                             println("Profile $index saved successfully!")
@@ -60,21 +59,56 @@ class FirebaseApi {
                             println("Error saving Profile $index: $it")
                         }
                 }
-
                 // Save Reviews subcollection
+                val newReviewIds = user.reviews.map { it.reviewId }
                 user.reviews.forEachIndexed { index, review ->
-                    db.collection("User")
+                    val reviewDocRef = db.collection("User")
                         .document(userId)
                         .collection("reviews")
-                        .document("review_$index")
-                        .set(review)
-                        .addOnSuccessListener {
-                            println("Review $index saved successfully!")
-                        }
-                        .addOnFailureListener {
-                            println("Error saving Review $index: $it")
-                        }
+                        .document(review.reviewId)
+
+                    if (review.reviewId !in newReviewIds) {
+                        // Delete the review if it's not in the new list
+                        reviewDocRef.delete()
+                            .addOnSuccessListener {
+                                println("Review $index deleted successfully!")
+                            }
+                            .addOnFailureListener {
+                                println("Error deleting Review $index: $it")
+                            }
+                    } else {
+                        // Save or update the review
+                        reviewDocRef.set(review)
+                            .addOnSuccessListener {
+                                println("Review $index saved successfully!")
+                            }
+                            .addOnFailureListener {
+                                println("Error saving Review $index: $it")
+                            }
+                    }
                 }
+                // Remove the reviews that are not in the user's reviews list
+                db.collection("User")
+                    .document(userId)
+                    .collection("reviews")
+                    .get()
+                    .addOnSuccessListener { querySnapshot ->
+                        for (document in querySnapshot) {
+                            val review = document.toObject(Review::class.java)
+                            if (review != null && !user.reviews.contains(review)) {
+                                document.reference.delete()
+                                    .addOnSuccessListener {
+                                        println("Review deleted successfully!")
+                                    }
+                                    .addOnFailureListener {
+                                        println("Error deleting review: $it")
+                                    }
+                            }
+                        }
+                    }
+                    .addOnFailureListener {
+                        println("Error getting reviews: $it")
+                    }
             }
             .addOnFailureListener {
                 println("Error saving user: $it")
@@ -89,7 +123,6 @@ class FirebaseApi {
                 if (!querySnapshot.isEmpty) {
                     val userDocument = querySnapshot.documents[0]
                     val user = userDocument.toObject(User::class.java)
-
                     if (user != null) {
                         // Fetch Trips subcollection
                         userDocument.reference.collection("trips")
@@ -97,21 +130,27 @@ class FirebaseApi {
                             .addOnSuccessListener { tripsSnapshot ->
                                 val tripsList = tripsSnapshot.toObjects(Trip::class.java)
                                 user.trips = tripsList
-                                user.userId = userDocument.id
+                                user.trips.forEachIndexed { index, trip ->
+                                    trip.tripId = tripsSnapshot.documents[index].id
+                                }
                                 // Fetch Profile subcollection
                                 userDocument.reference.collection("profile")
                                     .get()
                                     .addOnSuccessListener { profilesSnapshot ->
                                         val profilesList = profilesSnapshot.toObjects(Profile::class.java)
                                         user.profile = profilesList
-
+                                        user.profile.forEachIndexed { index, profile ->
+                                            profile.profileId = profilesSnapshot.documents[index].id
+                                        }
                                         // Fetch Reviews subcollection
                                         userDocument.reference.collection("reviews")
                                             .get()
                                             .addOnSuccessListener { reviewsSnapshot ->
                                                 val reviewsList = reviewsSnapshot.toObjects(Review::class.java)
                                                 user.reviews = reviewsList
-
+                                                user.reviews.forEachIndexed { index, review ->
+                                                    review.reviewId = reviewsSnapshot.documents[index].id
+                                                }
                                                 callback(user)
                                             }
                                             .addOnFailureListener {

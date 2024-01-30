@@ -9,5 +9,5 @@ data class User(
     val saves: List<String> = emptyList(),
     var trips: List<Trip> = emptyList(),
     var profile: List<Profile> = emptyList(),
-    var reviews: List<Review> = emptyList()
+    var reviews: MutableList<Review> = mutableListOf()
 )
