@@ -1,9 +1,13 @@
 package com.example.groupproject.ui.destination
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,9 +17,14 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -131,7 +140,35 @@ private fun DestinationDetailsContent(navController: NavHostController, destinat
                         style = MaterialTheme.typography.h5,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
+                    Text(
+                        text = "Activities: ${destination.activityList.joinToString(", ")}",
+                        style = MaterialTheme.typography.body1,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
 
+                    Text(
+                        text = "Likes: ${destination.likes}",
+                        style = MaterialTheme.typography.body1,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+
+                    Text(
+                        text = "Local Currencies: ${destination.localCurrencies.joinToString(", ")}",
+                        style = MaterialTheme.typography.body1,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+
+                    Text(
+                        text = "Local Language: ${destination.localLanguage.joinToString(", ")}",
+                        style = MaterialTheme.typography.body1,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+
+                    Text(
+                        text = "Tags: ${destination.tags.joinToString(", ")}",
+                        style = MaterialTheme.typography.body1,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
                     // Tabs for Description, Reviews, and Map
                     DestinationTabs(
                         navController = navController,
@@ -141,6 +178,7 @@ private fun DestinationDetailsContent(navController: NavHostController, destinat
 
                     // Add other destination details components here based on your requirements
                 }
+                AddToListFab(navController = navController, destination = destination)
             }
         }
     }
@@ -200,7 +238,7 @@ private fun DestinationTabs(navController: NavHostController, destination: Desti
         // Content based on selected tab
         when (selectedTabIndex) {
             0 -> DestinationDescription(destination = destination)
-            1 -> DestinationReviews(destination = destination, destinationDetailViewModel = destinationDetailViewModel)
+            1 -> DestinationReviews(navController = navController, destination = destination, destinationDetailViewModel = destinationDetailViewModel)
             2 -> DestinationMap(navController = navController, destination = destination)
             3 -> DestinationPictures(destination = destination)
         }
@@ -229,14 +267,22 @@ private fun DestinationDescription(destination: Destination) {
 }
 
 @Composable
-private fun DestinationReviews(destination: Destination, destinationDetailViewModel: destinationDetailViewModel) {
+private fun DestinationReviews(navController : NavHostController, destination: Destination, destinationDetailViewModel: destinationDetailViewModel) {
     // Displaying reviews
     if (destination.reviews.isNotEmpty()) {
-        Text(
-            text = "Reviews:",
-            style = MaterialTheme.typography.subtitle1,
-            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
-        )
+        // Button to write a review
+        Button(
+            onClick = {
+                // Handle the action to write a review, you can navigate to another screen or show a dialog.
+                // For simplicity, let's show a toast message.
+                Toast.makeText(navController.context, "Write a Review button clicked", Toast.LENGTH_SHORT).show()
+            },
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .fillMaxWidth()
+        ) {
+            Text("Write a Review")
+        }
         destination.reviews.forEach { review ->
             reviewCard(review = review, destinationDetailViewModel = destinationDetailViewModel)
         }
@@ -247,13 +293,54 @@ private fun DestinationReviews(destination: Destination, destinationDetailViewMo
 private fun DestinationMap(navController: NavHostController, destination: Destination) {
     val apiKey = "AIzaSyDS8L5B2IitXRFDYLCfSfWcyUydvCuCjt0"
     val destinationLocation = destination.location
+
+    val imageUrl = "https://maps.googleapis.com/maps/api/staticmap?size=512x512&maptype=roadmap" +
+            "&markers=size:mid%7Ccolor:red%7C" + destinationLocation +
+            "&key=" + apiKey
+
     AsyncImage(
-        model = "https://maps.googleapis.com/maps/api/staticmap?size=512x512&maptype=roadmap" +
-                "&markers=size:mid%7Ccolor:red%7C" + destinationLocation +
-                "&key=" + apiKey,
+        model = imageUrl,
         contentDescription = "Translated description of what the image contains",
         modifier = Modifier
             .fillMaxWidth()
-            .height(400.dp)
+            .height(450.dp)
+            .clickable {
+                val uri = "geo:${destinationLocation}?q=${destinationLocation}"
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+
+                // 检查是否有应用程序可以处理该意图
+                if (intent.resolveActivity(navController.context.packageManager) != null) {
+                    navController.context.startActivity(intent)
+                } else {
+                    // 如果没有应用程序可以处理，执行备用操作，例如显示消息
+                    Toast
+                        .makeText(
+                            navController.context,
+                            "No app found to handle the intent",
+                            Toast.LENGTH_SHORT
+                        )
+                        .show()
+                }
+            }
     )
+}
+
+@Composable
+private fun AddToListFab(navController: NavHostController, destination: Destination) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.BottomEnd
+    ) {
+        FloatingActionButton(
+            onClick = {
+                // Handle the action to add the destination to a list
+                // For simplicity, let's show a toast message.
+                Toast.makeText(navController.context, "Destination added to list", Toast.LENGTH_SHORT).show()
+            }
+        ) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = "Add to List")
+        }
+    }
 }
