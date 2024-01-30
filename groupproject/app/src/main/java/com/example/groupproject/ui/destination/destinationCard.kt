@@ -48,7 +48,9 @@ import com.example.groupproject.ui.home.SortOrder
 @Composable
 fun destinationCard(navController: NavController, destination: Destination) {
     Card(
-        onClick = {navController.navigate("destinationDetail/${destination.name}")},
+        onClick = {
+            navController.navigate("destinationDetail/${destination.name}")
+                  },
         modifier = Modifier
         .fillMaxWidth()
         .padding(16.dp),
