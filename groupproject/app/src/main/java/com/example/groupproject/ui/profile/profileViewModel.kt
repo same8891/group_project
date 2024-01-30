@@ -1,9 +1,14 @@
 package com.example.groupproject.ui.profile
 
+import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.groupproject.data.FirebaseApi
 import com.example.groupproject.data.model.Profile
 import com.example.groupproject.data.model.User
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -33,5 +38,11 @@ class profileViewModel(private val firebaseApi: FirebaseApi) : ViewModel() {
 
     fun updateProfile(userId: String, profile: Profile) {
         firebaseApi.saveProfile(userId, profile)
+    }
+
+    fun uploadImage(userId: String, uri: Uri, callback: (String?) -> Unit) {
+        firebaseApi.uploadImage(userId, uri) { imageUrl ->
+            callback(imageUrl)
+        }
     }
 }

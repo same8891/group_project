@@ -32,6 +32,14 @@ import com.example.groupproject.data.model.User
 import com.example.groupproject.data.model.Profile
 import com.example.groupproject.data.model.Review
 import com.example.groupproject.data.model.Trip
+import android.content.Intent
+import android.net.Uri
+import android.provider.MediaStore
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.remember
 
 
 @Composable
@@ -39,7 +47,34 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
     val context = navController.context
     val sharedPref: SharedPreferences = context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
     val userEmail = sharedPref.getString("email", "") ?: ""
+    // 使用 remember 创建一个可编辑的状态以保存用户输入的内容
+    var fullNameState by remember { mutableStateOf("") }
+
+    // 使用 remember 创建一个可观察的状态以保存图片的URL
+    var uploadImageUrl = remember { mutableStateOf("") }
+
+
     val user by profileViewModel.user.collectAsState()
+    // 使用 remember 创建一个 ActivityResultLauncher 来启动选择图片的操作
+    val getContent = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let { selectedUri ->
+            // 选择了图片，你可以在这里处理
+            user?.let {
+                profileViewModel.uploadImage(it.userId, uri) { imageUrl: String? ->
+                    if (imageUrl != null) {
+                        // 图片上传成功，imageUrl 是上传后的图片URL
+                        Log.d("SelectedImage", "Image URL: $imageUrl")
+                        // 返回图片URL
+                        uploadImageUrl.value = imageUrl
+                        // 例如：profileViewModel.updateUserProfileImage(userId, imageUrl)
+                    } else {
+                        // 图片上传失败或获取URL失败
+                        Log.e("SelectedImage", "Failed to upload image or get URL")
+                    }
+                }
+            }
+        }
+    }
 
     LaunchedEffect(userEmail) {
         profileViewModel.getUser(userEmail)
@@ -55,18 +90,45 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             user?.let { displayUser(it) }
+
+
+
+            // 添加文本框来编辑 Full Name
+            TextField(
+                value = fullNameState,
+                onValueChange = {
+                    fullNameState = it
+                },
+                label = { Text("Full Name") }, // 可选的标签
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Button(
                 onClick = {
+                    // 更新 Full Name
                     val profile = user?.profile?.get(0)
                     if (profile != null) {
-                        profile.fullName = "New Name"
+                        profile.fullName = fullNameState
                         profileViewModel.updateProfile(user?.userId ?: "", profile)
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "Edit Profile")
+                Text(text = "Edit Profile Name")
             }
+
+            // 添加按钮来选择图片
+            Button(
+                onClick = {
+                    // 启动选择图片的操作
+                    getContent.launch("image/*")
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "Select Image")
+            }
+            // 显示返回的URL
+            Text(text = "Image URL: ${uploadImageUrl.value}")
         }
     }
 }
@@ -120,3 +182,4 @@ fun displayReview(review: Review) {
     Text(text = "Rating: ${review.rating}")
     // Add more fields as needed
 }
+

@@ -1,5 +1,6 @@
 package com.example.groupproject.data
 
+import android.net.Uri
 import android.util.Log
 import com.example.groupproject.data.model.Destination
 import com.example.groupproject.data.model.Feedback
@@ -12,6 +13,11 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Filter.equalTo
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.ktx.storage
+import java.io.ByteArrayOutputStream
 
 class FirebaseApi {
 
@@ -692,6 +698,38 @@ class FirebaseApi {
             }
             .addOnFailureListener {
                 println("用户显示名称更新失败: $it")
+            }
+    }
+
+
+    fun uploadImage(userId: String, uri: Uri, callback: (String?) -> Unit) {
+        val storage = Firebase.storage
+        val storageRef = storage.reference
+
+        val imagesRef: StorageReference = storageRef.child("images")
+        val fileUri = uri
+        val imageName = Uri.parse(fileUri.toString()).lastPathSegment
+            ?: ("image" + userId + System.currentTimeMillis() + ".jpg")
+        val fileRef = imagesRef.child(imageName)
+
+        fileRef.putFile(fileUri)
+            .addOnSuccessListener { taskSnapshot ->
+                // 文件上传成功，获取下载URL
+                fileRef.downloadUrl.addOnSuccessListener { uri ->
+                    val downloadUrl = uri.toString()
+                    // 将下载URL通过回调函数传递给调用者
+                    callback(downloadUrl)
+                }
+                    .addOnFailureListener { e ->
+                        // 获取下载URL失败
+                        println("获取下载URL失败: $e")
+                        callback(null) // 传递 null 表示失败
+                    }
+            }
+            .addOnFailureListener { e ->
+                // 文件上传失败
+                println("文件上传失败: $e")
+                callback(null) // 传递 null 表示失败
             }
     }
 }
