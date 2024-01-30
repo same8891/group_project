@@ -710,7 +710,7 @@ class FirebaseApi {
         val fileUri = uri
         val imageName = Uri.parse(fileUri.toString()).lastPathSegment
             ?: ("image" + userId + System.currentTimeMillis() + ".jpg")
-        val fileRef = imagesRef.child(imageName)
+        val fileRef = imagesRef.child(userId + System.currentTimeMillis() + imageName )
 
         fileRef.putFile(fileUri)
             .addOnSuccessListener { taskSnapshot ->
