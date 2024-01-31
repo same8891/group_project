@@ -54,4 +54,22 @@ class destinationDetailViewModel(private val firebaseApi: FirebaseApi) : ViewMod
             }
         }
     }
+
+    fun toggleLike(destination: Destination) {
+        viewModelScope.launch(Dispatchers.IO) {
+            firebaseApi.toggleLike(destination)
+        }
+    }
+
+    fun saveDestination(destination: Destination, user: User) {
+        viewModelScope.launch(Dispatchers.IO) {
+            firebaseApi.saveUserSaves(destination, user)
+        }
+    }
+
+    fun removeDestinationFromSaved(destination: Destination, user: User) {
+        viewModelScope.launch(Dispatchers.IO) {
+            firebaseApi.removeDestinationFromSaved(destination, user)
+        }
+    }
 }

@@ -423,7 +423,7 @@ class FirebaseApi {
                         .addOnSuccessListener { reviewsSnapshot ->
                             val reviewsList = reviewsSnapshot.toObjects(Review::class.java)
                             destination.reviews = reviewsList
-
+                            destination.destinationId = document.id
                             destinationList.add(destination)
 
                             // Check if it's the last document, then call the callback
@@ -836,6 +836,51 @@ class FirebaseApi {
             }
             .addOnFailureListener {
                 println("目的地添加失败: $it")
+            }
+    }
+
+    fun toggleLike(destination: Destination) {
+        // 获取目的地文档的引用
+        val destinationRef = db.collection("Destination").document(destination.name)
+        // 更新目的地的点赞数
+        destinationRef.update("likes", FieldValue.increment(1))
+            .addOnSuccessListener {
+                println("点赞成功")
+            }
+            .addOnFailureListener {
+                println("点赞失败: $it")
+            }
+    }
+
+    fun saveUserSaves(destination: Destination, user: User) {
+        // 获取用户文档的引用
+        val userRef = db.collection("User").document(user.userId)
+        // 获取用户的收藏列表
+        val saves = user.saves.toMutableList()
+        saves.add(destination.name)
+        // 更新用户的收藏列表
+        userRef.update("saves", saves)
+            .addOnSuccessListener {
+                println("收藏成功")
+            }
+            .addOnFailureListener {
+                println("收藏失败: $it")
+            }
+    }
+
+    fun removeDestinationFromSaved(destination: Destination, user: User) {
+        // 获取用户文档的引用
+        val userRef = db.collection("User").document(user.userId)
+        // 获取用户的收藏列表
+        val saves = user.saves.toMutableList()
+        saves.remove(destination.name)
+        // 更新用户的收藏列表
+        userRef.update("saves", saves)
+            .addOnSuccessListener {
+                println("取消收藏成功")
+            }
+            .addOnFailureListener {
+                println("取消收藏失败: $it")
             }
     }
 }
