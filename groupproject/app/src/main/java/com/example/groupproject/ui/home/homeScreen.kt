@@ -52,11 +52,12 @@ import com.example.groupproject.data.model.Destination
 import com.example.groupproject.data.model.User
 import com.example.groupproject.ui.destination.destinationCard
 import com.example.groupproject.ui.profile.profileViewModel
+import com.example.groupproject.ui.setting.settingViewModel
 import java.util.jar.Attributes.Name
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun homeScreen(navController: NavController,homeViewModel: homeViewModel,profileViewModel: profileViewModel) {
+fun homeScreen(navController: NavController,homeViewModel: homeViewModel,profileViewModel: profileViewModel,settingsViewModel:settingViewModel) {
     var State by remember { mutableStateOf(1) }
     var searchInput by remember { mutableStateOf("") }
     var selectedCheckBoxItems by remember { mutableStateOf<List<String>>(emptyList()) }
@@ -70,6 +71,7 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel,profile
     val userEmail = sharedPref.getString("email","") ?: ""
     LaunchedEffect(userEmail){
         profileViewModel.getUser(userEmail)
+        settingsViewModel.getUser(userEmail)
         homeViewModel.getAllDestinations()
     }
     if(selectedOption1 == SortOrder.ASCENDING_NAME && selectedOption2 == SortOrder.Empty)

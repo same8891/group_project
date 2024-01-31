@@ -77,7 +77,7 @@ class MainActivity : ComponentActivity() {
             groupProjectTheme {
                 NavHost(navController, startDestination = "login") {
                     composable("home") {
-                        homeScreen(navController, homeViewModel, profileViewModel)
+                        homeScreen(navController, homeViewModel, profileViewModel,settingsViewModel)
                         BottomNavigationBar(navController, homeViewModel, tripsViewModel,
                             profileViewModel, settingsViewModel, destinationDetailViewModel, "")
                     }
@@ -214,7 +214,7 @@ fun BottomNavigationBar(navController: NavHostController,
         ) {
             Column(Modifier.padding(it)) {
                 when (selectedItemIndex) {
-                    0 -> homeScreen(navController, homeViewModel,profileViewModel)
+                    0 -> homeScreen(navController, homeViewModel,profileViewModel,settingsViewModel)
                     1 -> tripsScreen(navController, tripsViewModel)
                     2 -> profileScreen(navController, profileViewModel)
                     3 -> settingScreen(navController, settingsViewModel)
