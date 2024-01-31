@@ -519,7 +519,7 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                             onClick = {
 
                                                 user?.reviews?.removeAt(index)
-                                                navController.navigate("profile")
+//                                                navController.navigate("profile")
 //                                                profileViewModel.updateUser(user!!, user!!.email)
                                                 reviewDeleteDialog = false
                                             }

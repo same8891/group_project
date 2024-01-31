@@ -2,12 +2,18 @@ package com.example.groupproject.ui.setting
 
 import android.net.Uri
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.groupproject.data.FirebaseApi
+import com.example.groupproject.data.model.Destination
+import com.example.groupproject.data.model.Feedback
 import com.example.groupproject.data.model.Profile
 import com.example.groupproject.data.model.User
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 class settingViewModel(private val firebaseApi: FirebaseApi) : ViewModel() {
 
@@ -41,5 +47,22 @@ class settingViewModel(private val firebaseApi: FirebaseApi) : ViewModel() {
         firebaseApi.uploadImage(userId, uri) { imageUrl ->
             callback(imageUrl)
         }
+    }
+
+
+    // LiveData to hold the list of destinations
+    val feedback = mutableStateOf<List<Feedback>>(emptyList())
+
+    // Function to fetch all destinations
+    fun getFeedbacks() {
+        viewModelScope.launch(Dispatchers.IO) {
+            firebaseApi.getAllFeedbacks { feedbackList ->
+                feedback.value = feedbackList
+            }
+        }
+    }
+
+    fun addFeedback(feedback: Feedback) {
+        firebaseApi.addFeedback(feedback = feedback)
     }
 }

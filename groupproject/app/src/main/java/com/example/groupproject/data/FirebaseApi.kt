@@ -395,15 +395,15 @@ class FirebaseApi {
     }
 
     // Create or update feedback
-    fun saveFeedback(feedback: Feedback, feedbackId: String) {
+    fun addFeedback(feedback: Feedback) {
+        // 保存反馈数据
         db.collection("Feedback")
-            .document(feedbackId)
-            .set(feedback)
+            .add(feedback)
             .addOnSuccessListener {
-                println("Feedback saved successfully!")
+                println("反馈保存成功")
             }
             .addOnFailureListener {
-                println("Error saving feedback: $it")
+                println("反馈保存失败: $it")
             }
     }
 
