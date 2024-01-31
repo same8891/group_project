@@ -54,7 +54,9 @@ import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.groupproject.data.model.Destination
+import com.example.groupproject.data.model.Trip
 import com.example.groupproject.data.model.User
+import com.example.groupproject.ui.trips.tripeditdialog
 import com.example.groupproject.ui.util.ImageWall
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -62,6 +64,7 @@ import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firestore.admin.v1.Index
 import com.yisheng.shoppingapplication.ui.home.ImageSlider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -78,6 +81,9 @@ fun destinationDetailScreen(
     var isLoading by remember { mutableStateOf(true) }
     var expanded by remember { mutableStateOf(false) }
     var user by remember { mutableStateOf(User()) }
+    var tripDialogShow by remember { mutableStateOf(false) }
+    var currentTripIndex by remember { mutableStateOf(0) }
+    var allDestination by remember { mutableStateOf(listOf<Destination>()) }
     // Trigger fetching destination detail when the screen is first launched
     LaunchedEffect(destinationName) {
         isLoading = true
@@ -86,6 +92,7 @@ fun destinationDetailScreen(
         }
         val sharedPref: SharedPreferences = navController.context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
         val userEmail = sharedPref.getString("email","") ?: ""
+        destinationDetailViewModel.getAllDestination { allDestination = it }
         destinationDetailViewModel.getUser(userEmail) {
             user = it ?: User()
             isLoading = false
@@ -133,7 +140,25 @@ fun destinationDetailScreen(
                                 .zIndex(2f) // Ensure the DropdownMenu has a higher zIndex
                                 .background(MaterialTheme.colors.surface)
                         ) {
-                            dropDownTripItems(navController, destination!!, user, destinationDetailViewModel)
+                            val tripList = user.trips
+                            tripList.forEachIndexed() { index, trip ->
+                                DropdownMenuItem(onClick = {
+                                    if (trip.destinationList.contains(destination!!.name)) {
+                                        Toast.makeText(
+                                            navController.context,
+                                            "Destination already in ${trip.title}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        destinationDetailViewModel.addDestinationToTrip(destination!!, user, trip)
+                                        Toast.makeText(
+                                            navController.context,
+                                            "Added ${destination!!.name} to ${trip.title} successfully!",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }, text = { Text("${trip.title} : StartDate: ${trip.startDate}") })
+                            }
                             DropdownMenuItem(onClick = {
                                 expanded = false
                                 Toast.makeText(
@@ -141,6 +166,7 @@ fun destinationDetailScreen(
                                     "Add To New trip",
                                     Toast.LENGTH_SHORT
                                 ).show()
+                                tripDialogShow = true
                             }, text = { Text("Add To New trip") })
                         }
                     }
@@ -156,7 +182,17 @@ fun destinationDetailScreen(
                 currency = user.currency ?: "USD"
             )
 
-
+            if (tripDialogShow) {
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))) {
+                    tripeditdialog(
+                        trip = Trip(),
+                        AllDestination = allDestination.map { it.name },
+                        onDismiss = { tripDialogShow = false },
+                    )
+                }
+            }
         }
 
 
@@ -368,7 +404,9 @@ private fun DestinationReviews(
     var reviewDialogShown by remember { mutableStateOf(false) }
     // Review dialog
     if (reviewDialogShown) {
-        Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f))) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f))) {
             reviewdialog(
                 destination = destination,
                 isDestinationReviewed = false,
@@ -451,35 +489,4 @@ private fun DestinationMap(navController: NavHostController, destination: Destin
                 }
             }
     )
-}
-
-
-
-@Composable
-fun dropDownTripItems(navController:NavHostController, destination: Destination, user: User, destinationDetailViewModel: destinationDetailViewModel) {
-    val tripList = user.trips
-    tripList.forEach { trip ->
-        DropdownMenuItem(onClick = {
-                                   if (trip.destinationList.contains(destination.name)) {
-                                       Toast.makeText(
-                                           navController.context,
-                                           "Destination already in ${trip.title}",
-                                           Toast.LENGTH_SHORT
-                                       ).show()
-                                   } else {
-                                       destinationDetailViewModel.addDestinationToTrip(destination, user, trip)
-                                       Toast.makeText(
-                                           navController.context,
-                                           "Added ${destination.name} to ${trip.title} successfully!",
-                                           Toast.LENGTH_SHORT
-                                       ).show()
-                                   }
-//            destinationDetailViewModel.addDestinationToTrip(destination, user, trip)
-//            Toast.makeText(
-//                navController.context,
-//                "Added ${destination.name} to ${trip.title} successfully!",
-//                Toast.LENGTH_SHORT
-//            ).show()
-        }, text = { Text("${trip.title} : StartDate: ${trip.startDate}") })
-    }
 }

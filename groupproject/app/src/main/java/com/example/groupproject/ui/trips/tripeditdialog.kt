@@ -65,91 +65,93 @@ fun tripeditdialog(trip: Trip, AllDestination: List<String>, onDismiss: () -> Un
     } else {
         Icons.Outlined.KeyboardArrowDown
     }
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
-    ) {
-        Column (modifier = Modifier.fillMaxWidth()){
-            IconButton(
-                onClick = { onDismiss() },
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .align(Alignment.End)
-            ) {
-                Icon(imageVector = Icons.Default.Close, contentDescription = "Close")
-            }
-        }
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
+        Dialog(
+            onDismissRequest = onDismiss,
+            properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
         ) {
-            Row (horizontalArrangement = Arrangement.End){
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = {
-                        expanded = !expanded
-                    },
+            Column (modifier = Modifier.fillMaxWidth().background(Color.White)){
+                IconButton(
+                    onClick = { onDismiss() },
                     modifier = Modifier
-                        .width(180.dp)
+                        .padding(8.dp)
+                        .align(Alignment.End)
                 ) {
-                    OutlinedTextField(
-                        value = select,
-                        onValueChange = { },
-                        placeholder = {
-                            Text(text = select)
-                        },
-                        readOnly = true,
-                        trailingIcon = {
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = "Arrow"
-                            )
-                        },
-                        modifier = Modifier.menuAnchor()
-                    )
-                    ExposedDropdownMenu(
+                    Icon(imageVector = Icons.Default.Close, contentDescription = "Close")
+                }
+            }
+            Column(
+                modifier = Modifier
+//                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .background(Color.White)
+            ) {
+                Row (horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth().background(Color.White)){
+                    ExposedDropdownMenuBox(
                         expanded = expanded,
-                        onDismissRequest = { expanded = false },
+                        onExpandedChange = {
+                            expanded = !expanded
+                        },
                         modifier = Modifier
-                            .height(300.dp),
+                            .width(180.dp)
                     ) {
-                        list.forEach {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(text = it.toString())
-                                },
-                                onClick = {
-                                    select = it.toString()
-                                    expanded = false
-                                }
-                            )
+                        OutlinedTextField(
+                            value = select,
+                            onValueChange = { },
+                            placeholder = {
+                                Text(text = select)
+                            },
+                            readOnly = true,
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = "Arrow"
+                                )
+                            },
+                            modifier = Modifier.menuAnchor()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            modifier = Modifier
+                                .height(300.dp),
+                        ) {
+                            list.forEach {
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(text = it.toString())
+                                    },
+                                    onClick = {
+                                        select = it.toString()
+                                        expanded = false
+                                    }
+                                )
+                            }
                         }
+
+                    }
+                    Button(
+                        onClick = {
+//                        Add it to destination list
+                        },
+                        modifier = Modifier.padding(start = 12.dp)
+                    ) {
+                        Text("Add")
                     }
 
                 }
-                Button(
-                    onClick = {
-//                        Add it to destination list
-                    },
-                    modifier = Modifier.padding(start = 12.dp)
-                ) {
-                    Text("Add")
-                }
-
-            }
-            LazyColumn(modifier = Modifier.size(300.dp)) {
-                items(trip.destinationList) { destination ->
-                    showitem(
-                        itemName = destination,
-                        onUpClick = { /* Handle up arrow click */ },
-                        onDownClick = { /* Handle down arrow click */ },
-                        onDeleteClick = { /* Handle delete button click */ }
-                    )
+                LazyColumn(modifier = Modifier.size(300.dp)) {
+                    items(trip.destinationList) { destination ->
+                        showitem(
+                            itemName = destination,
+                            onUpClick = { /* Handle up arrow click */ },
+                            onDownClick = { /* Handle down arrow click */ },
+                            onDeleteClick = { /* Handle delete button click */ }
+                        )
+                    }
                 }
             }
         }
-    }
+
 }
 @Preview(showBackground = true)
 @Composable

@@ -46,4 +46,12 @@ class destinationDetailViewModel(private val firebaseApi: FirebaseApi) : ViewMod
             }
         }
     }
+
+    fun getAllDestination(callback: (List<Destination>) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            firebaseApi.getAllDestinations { result ->
+                callback(result)
+            }
+        }
+    }
 }
