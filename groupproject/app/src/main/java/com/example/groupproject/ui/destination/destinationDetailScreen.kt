@@ -65,7 +65,7 @@ import coil.compose.AsyncImage
 import com.example.groupproject.data.model.Destination
 import com.example.groupproject.data.model.Trip
 import com.example.groupproject.data.model.User
-import com.example.groupproject.ui.trips.tripeditdialog
+import com.example.groupproject.ui.trips.AddTripDialog
 import com.example.groupproject.ui.util.ImageWall
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -285,10 +285,10 @@ fun destinationDetailScreen(
                         .fillMaxSize()
                         .background(Color.Black.copy(alpha = 0.5f))
                 ) {
-                    tripeditdialog(
-                        trip = Trip(),
-                        AllDestination = allDestination.map { it.name },
-                        onDismiss = { tripDialogShow = false },
+                    AddTripDialog(
+                        showAddDialog = tripDialogShow,
+                        onDismissRequest = { tripDialogShow = false },
+                        onConfirmClick = { tripDialogShow = false }
                     )
                 }
             }
