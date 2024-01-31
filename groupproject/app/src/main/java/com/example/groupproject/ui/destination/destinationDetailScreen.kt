@@ -364,18 +364,30 @@ private fun DestinationReviews(
     destination: Destination,
     destinationDetailViewModel: destinationDetailViewModel
 ) {
+
+    var reviewDialogShown by remember { mutableStateOf(false) }
+    // Review dialog
+    if (reviewDialogShown) {
+        Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f))) {
+            reviewdialog(
+                destination = destination,
+                isDestinationReviewed = false,
+                rating = 5,
+                reviewText = "",
+                onDismiss = { reviewDialogShown = false },
+                onSubmit = { rating, reviewText ->
+                    destinationDetailViewModel.updateReviewLikes("userId", 1)
+                    reviewDialogShown = false
+                }
+            )
+        }
+    }
     // Displaying reviews
     if (destination.reviews.isNotEmpty()) {
         // Button to write a review
         Button(
             onClick = {
-                // Handle the action to write a review, you can navigate to another screen or show a dialog.
-                // For simplicity, let's show a toast message.
-                Toast.makeText(
-                    navController.context,
-                    "Write a Review button clicked",
-                    Toast.LENGTH_SHORT
-                ).show()
+                reviewDialogShown = true
             },
             modifier = Modifier
                 .padding(top = 16.dp)

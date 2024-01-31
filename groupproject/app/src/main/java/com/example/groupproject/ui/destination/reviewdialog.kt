@@ -52,6 +52,7 @@ import com.example.groupproject.ui.profile.profileViewModel
 
 @Composable
 fun reviewdialog(
+    destination: Destination = Destination(),
     isDestinationReviewed:Boolean = false,
     rating: Int = 5,
     reviewText: String = "",
@@ -62,12 +63,13 @@ fun reviewdialog(
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
     ) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth()
+                .background(Color.White)
         ) {
             if(isDestinationReviewed == false) {
                 Text(
