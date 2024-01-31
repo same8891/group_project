@@ -820,4 +820,22 @@ class FirebaseApi {
                 callback(null) // 传递 null 表示失败
             }
     }
+
+    fun addDestinationToTrip(destination: Destination, user: User, trip: Trip) {
+        // 获取用户文档的引用
+        val userTrips = db.collection("User").document(user.userId).collection("trips")
+        // 获取旅行文档的引用
+        val tripRef = userTrips.document(trip.tripId)
+        // 获取旅行的目的地列表
+        val destinations = trip.destinationList.toMutableList()
+        destinations.add(destination.name)
+        // 更新旅行的目的地列表
+        tripRef.update("destinationList", destinations)
+            .addOnSuccessListener {
+                println("目的地添加成功")
+            }
+            .addOnFailureListener {
+                println("目的地添加失败: $it")
+            }
+    }
 }

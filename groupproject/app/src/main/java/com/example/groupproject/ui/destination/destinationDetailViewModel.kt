@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.groupproject.data.FirebaseApi
 import com.example.groupproject.data.model.Destination
+import com.example.groupproject.data.model.Trip
+import com.example.groupproject.data.model.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -27,6 +29,20 @@ class destinationDetailViewModel(private val firebaseApi: FirebaseApi) : ViewMod
         viewModelScope.launch(Dispatchers.IO) {
             destination?.let {
                 firebaseApi.updateReviewLikes(it, userId, likes)
+            }
+        }
+    }
+
+    fun addDestinationToTrip(destination: Destination, user: User, trip: Trip) {
+        viewModelScope.launch(Dispatchers.IO) {
+            firebaseApi.addDestinationToTrip(destination, user, trip)
+        }
+    }
+
+    fun getUser(userId: String, callback: (User?) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            firebaseApi.getUserByEmail(userId) { result ->
+                callback(result)
             }
         }
     }
