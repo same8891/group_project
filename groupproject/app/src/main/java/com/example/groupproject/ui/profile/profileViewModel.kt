@@ -11,21 +11,26 @@ import kotlinx.coroutines.flow.StateFlow
 
 class profileViewModel(private val firebaseApi: FirebaseApi) : ViewModel() {
 
-    private val _userProfile = MutableStateFlow<User?>(null)
-    val userProfile: StateFlow<User?> = _userProfile
+    private val _userProfile = MutableStateFlow<Profile?>(null)
+    val userProfile: MutableStateFlow<Profile?> = _userProfile
 
     private val _user = MutableStateFlow<User?>(null)
-    val user: StateFlow<User?> = _user
+    val user: MutableStateFlow<User?> = _user
 
     fun getUserProfile(email: String) {
         firebaseApi.getUserByEmail(email) { user ->
-            _userProfile.value = user
+            if (user != null) {
+                _userProfile.value = user.profile[0]
+            }
         }
     }
 
-    fun getUser(email: String) {
+    fun getUser(email: String, callback: (User?) -> Unit) {
         firebaseApi.getUserByEmail(email) { user ->
-            _user.value = user
+            if (user != null) {
+                _user.value = user
+                callback(user)
+            }
         }
     }
 
@@ -40,6 +45,23 @@ class profileViewModel(private val firebaseApi: FirebaseApi) : ViewModel() {
     fun uploadImage(userId: String, uri: Uri, callback: (String?) -> Unit) {
         firebaseApi.uploadImage(userId, uri) { imageUrl ->
             callback(imageUrl)
+        }
+    }
+
+
+    fun uploadUserImage(userId: String, url: String) {
+        firebaseApi.addUserProfileImageList(userId, url)
+    }
+
+    fun updateProfileImageFromUrl(userId: String, imageUrl: String) {
+        firebaseApi.updateProfileImage(userId, imageUrl)
+    }
+
+    fun updateProfileImageFromUri(userId: String, uri: Uri) {
+        firebaseApi.uploadImage(userId, uri) { imageUrl ->
+            if (imageUrl != null) {
+                firebaseApi.updateProfileImage(userId, imageUrl)
+            }
         }
     }
 }

@@ -70,7 +70,7 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel,profile
     val sharedPref: SharedPreferences = context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
     val userEmail = sharedPref.getString("email","") ?: ""
     LaunchedEffect(userEmail){
-        profileViewModel.getUser(userEmail)
+        profileViewModel.getUser(userEmail, {})
         settingsViewModel.getUser(userEmail)
         homeViewModel.getAllDestinations()
     }

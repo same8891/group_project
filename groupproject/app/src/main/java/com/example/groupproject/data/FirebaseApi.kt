@@ -30,6 +30,35 @@ class FirebaseApi {
             .document(userId)
             .set(user)
             .addOnSuccessListener {
+                //Delete the trip field in the user document
+                db.collection("User")
+                    .document(userId)
+                    .update("trips", FieldValue.delete())
+                    .addOnSuccessListener {
+                        println("Trips field deleted successfully!")
+                    }
+                    .addOnFailureListener {
+                        println("Error deleting trips field: $it")
+                    }
+                db.collection("User")
+                    .document(userId)
+                    .update("profile", FieldValue.delete())
+                    .addOnSuccessListener {
+                        println("Trips field deleted successfully!")
+                    }
+                    .addOnFailureListener {
+                        println("Error deleting trips field: $it")
+                    }
+                db.collection("User")
+                    .document(userId)
+                    .update("reviews", FieldValue.delete())
+                    .addOnSuccessListener {
+                        println("Trips field deleted successfully!")
+                    }
+                    .addOnFailureListener {
+                        println("Error deleting trips field: $it")
+                    }
+
                 println("User saved successfully!")
                 // Save Trips subcollection
                 user.trips.forEachIndexed { index, trip ->
@@ -67,9 +96,6 @@ class FirebaseApi {
                     .addOnFailureListener {
                         println("Error getting trips: $it")
                     }
-
-
-
                 // Save Profile subcollection
                 user.profile.forEachIndexed { index, profile ->
                     db.collection("User")
@@ -107,7 +133,6 @@ class FirebaseApi {
                         println("Error getting Profile: $it")
                     }
 
-
                 // Save Reviews subcollection
                 val newReviewIds = user.reviews.map { it.reviewId }
                 user.reviews.forEachIndexed { index, review ->
@@ -115,7 +140,6 @@ class FirebaseApi {
                         .document(userId)
                         .collection("reviews")
                         .document(review.reviewId)
-
                     if (review.reviewId !in newReviewIds) {
                         // Delete the review if it's not in the new list
                         reviewDocRef.delete()
@@ -881,6 +905,50 @@ class FirebaseApi {
             }
             .addOnFailureListener {
                 println("取消收藏失败: $it")
+            }
+    }
+
+    fun updateProfileImage(userId: String, imageUrl: String) {
+        // 更新用户的头像
+        db.collection("User")
+            .document(userId)
+            .collection("profile")
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (!querySnapshot.isEmpty) {
+                    val profileRef = querySnapshot.documents[0].reference
+                    profileRef.update("photoImage", imageUrl)
+                        .addOnSuccessListener {
+                            println("头像更新成功")
+                        }
+                        .addOnFailureListener {
+                            println("头像更新失败: $it")
+                        }
+                }
+            }
+    }
+
+    fun addUserProfileImageList(userId: String, imageUrl: String) {
+        // 获取用户文档的引用
+        val profileRef = db.collection("User").document(userId).collection("profile")
+        // 获取用户的头像列表
+        profileRef.get()
+            .addOnSuccessListener { querySnapshot ->
+                val profile = querySnapshot.toObjects(Profile::class.java)
+                val uploadImages = profile[0].uploadImages
+                uploadImages.add(imageUrl)
+                // 更新用户的头像列表
+                profileRef.document(querySnapshot.documents[0].id)
+                    .update("uploadImages", uploadImages)
+                    .addOnSuccessListener {
+                        println("图片列表更新成功")
+                    }
+                    .addOnFailureListener {
+                        println("图片列表更新失败: $it")
+                    }
+            }
+            .addOnFailureListener {
+                println("获取图片列表失败: $it")
             }
     }
 }

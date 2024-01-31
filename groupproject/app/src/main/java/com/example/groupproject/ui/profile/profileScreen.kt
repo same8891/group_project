@@ -2,8 +2,13 @@ package com.example.groupproject.ui.profile
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -54,6 +59,7 @@ import com.example.groupproject.data.model.Review
 import com.example.groupproject.data.model.Trip
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -66,10 +72,25 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
     val sharedPref: SharedPreferences =
         context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
     val userEmail = sharedPref.getString("email", "") ?: ""
-    val user by profileViewModel.user.collectAsState()
+    var user by remember { mutableStateOf(User())}
+    var radio by remember { mutableStateOf("Date") }
+    var userDisplayName by remember { mutableStateOf("") }
+    var userProfile by remember { mutableStateOf(Profile()) }
+    var userTrips by remember { mutableStateOf(emptyList<Trip>()) }
+    var userReviews by remember { mutableStateOf(emptyList<Review>()) }
+    var userImage by remember { mutableStateOf("") }
 
-    LaunchedEffect(userEmail) {
-        profileViewModel.getUser(userEmail)
+    LaunchedEffect(key1 = userEmail) {
+        profileViewModel.getUser(userEmail) { thisUser ->
+            if (thisUser != null) {
+                user = thisUser
+                userDisplayName = user.displayName
+                userProfile = user.profile[0]
+                userTrips = user.trips
+                userReviews = user.reviews
+                userImage = user.profile[0].photoImage
+            }
+        }
     }
 
     Surface(
@@ -81,10 +102,8 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                var displayName by remember { mutableStateOf(user?.displayName ?: "") }
-                var radio by remember { mutableStateOf("Date") }
                 Text(
-                    text = displayName,
+                    text = userDisplayName,
                     color = MaterialTheme.colorScheme.background,
                     fontSize = MaterialTheme.typography.displayMedium.fontSize,
                     fontWeight = FontWeight.Bold,
@@ -94,6 +113,78 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                     textAlign = TextAlign.Center
                 )
                 user?.profile?.forEach {
+                    // 使用 remember 创建一个可观察的状态以保存图片的URL
+                    var uploadImageUrl = remember { mutableStateOf("") }
+                    val getContent = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+                        uri?.let { selectedUri ->
+                            // 选择了图片，你可以在这里处理
+                            user?.let {
+                                profileViewModel.uploadImage(it.userId, uri) { imageUrl: String? ->
+                                    if (imageUrl != null) {
+                                        // 图片上传成功，imageUrl 是上传后的图片URL
+                                        Log.d("SelectedImage", "Image URL: $imageUrl")
+                                        // 返回图片URL
+                                        uploadImageUrl.value = imageUrl
+                                        profileViewModel.updateProfileImageFromUrl(
+                                            user.userId,
+                                            uploadImageUrl.value)
+                                        profileViewModel.getUser(userEmail) { thisUser ->
+                                            if (thisUser != null) {
+                                                user = thisUser
+                                                userDisplayName = user.displayName
+                                                userProfile = user.profile[0]
+                                                userTrips = user.trips
+                                                userReviews = user.reviews
+                                                userImage = user.profile[0].photoImage
+                                            }
+                                        }
+                                        Toast.makeText(
+                                            navController.context,
+                                            "Image uploaded successfully with URL: $imageUrl",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        // 图片上传失败或获取URL失败
+                                        Log.e("SelectedImage", "Failed to upload image or get URL")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    val uploadImage = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+                        uri?.let { selectedUri ->
+                            // 选择了图片，你可以在这里处理
+                            user?.let {
+                                profileViewModel.uploadImage(it.userId, uri) { imageUrl: String? ->
+                                    if (imageUrl != null) {
+                                        // 图片上传成功，imageUrl 是上传后的图片URL
+                                        Log.d("SelectedImage", "Image URL: $imageUrl")
+                                        // 返回图片URL
+                                        uploadImageUrl.value = imageUrl
+                                        profileViewModel.uploadUserImage(user.userId, imageUrl)
+                                        profileViewModel.getUser(userEmail) { thisUser ->
+                                            if (thisUser != null) {
+                                                user = thisUser
+                                                userDisplayName = user.displayName
+                                                userProfile = user.profile[0]
+                                                userTrips = user.trips
+                                                userReviews = user.reviews
+                                                userImage = user.profile[0].photoImage
+                                            }
+                                        }
+                                        Toast.makeText(
+                                            navController.context,
+                                            "Image uploaded successfully with URL: $imageUrl",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        // 图片上传失败或获取URL失败
+                                        Log.e("SelectedImage", "Failed to upload image or get URL")
+                                    }
+                                }
+                            }
+                        }
+                    }
                     ElevatedCard(
                         modifier = Modifier
                             .size(
@@ -111,12 +202,15 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                         ) {
                             Spacer(modifier = Modifier.weight(0.5f))
                             Image(
-                                painter = rememberAsyncImagePainter(it.photoImage),
+                                painter = rememberAsyncImagePainter(userImage),
                                 contentDescription = "Profile",
                                 modifier = Modifier
                                     .size(200.dp)
                                     .padding(8.dp)
                                     .clip(CircleShape)
+                                    .clickable {
+                                        getContent.launch("image/*")
+                                    }
                             )
                             Spacer(modifier = Modifier.weight(0.5f))
                             Row {
@@ -127,9 +221,8 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                     modifier = Modifier
                                         .size(50.dp)
                                         .clickable {
-
-                                        }
-                                )
+                                            uploadImage.launch("image/*")
+                                        })
                                 Spacer(modifier = Modifier.weight(0.25f))
                                 var nameDialog by remember { mutableStateOf(false) }
                                 Image(
@@ -142,7 +235,6 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                         }
                                 )
                                 if (nameDialog) {
-                                    var dialogDisplayName by remember { mutableStateOf(displayName) }
                                     AlertDialog(
                                         onDismissRequest = { nameDialog = false },
                                         title = {
@@ -152,19 +244,28 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                         },
                                         text = {
                                             TextField(
-                                                value = dialogDisplayName,
-                                                onValueChange = { dialogDisplayName = it }
+                                                value = userDisplayName,
+                                                onValueChange = { userDisplayName = it }
                                             )
                                         },
                                         confirmButton = {
                                             Button(
                                                 onClick = {
-                                                    displayName = dialogDisplayName
-                                                    user?.displayName = dialogDisplayName
+                                                    user?.displayName = userDisplayName
                                                     profileViewModel.updateUser(
                                                         user!!,
-                                                        user!!.email
+                                                        user.email
                                                     )
+                                                    profileViewModel.getUser(userEmail) { thisUser ->
+                                                        if (thisUser != null) {
+                                                            user = thisUser
+                                                            userDisplayName = user.displayName
+                                                            userProfile = user.profile[0]
+                                                            userTrips = user.trips
+                                                            userReviews = user.reviews
+                                                            userImage = user.profile[0].photoImage
+                                                        }
+                                                    }
                                                     nameDialog = false
                                                 }
                                             ) {
@@ -602,3 +703,4 @@ fun displayReview(review: Review) {
     Text(text = "Rating: ${review.rating}")
     // Add more fields as needed
 }
+
