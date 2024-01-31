@@ -1,5 +1,6 @@
 package com.example.groupproject.ui.profile
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
@@ -58,6 +59,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 
+@SuppressLint("MutableCollectionMutableState")
 @Composable
 fun profileScreen(navController: NavController, profileViewModel: profileViewModel) {
     val context = navController.context
@@ -80,7 +82,7 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
         ) {
             item {
                 var displayName by remember { mutableStateOf(user?.displayName ?: "") }
-                var radio by remember{ mutableStateOf("Date") }
+                var radio by remember { mutableStateOf("Date") }
                 Text(
                     text = displayName,
                     color = MaterialTheme.colorScheme.background,
@@ -151,7 +153,7 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                         text = {
                                             TextField(
                                                 value = dialogDisplayName,
-                                                onValueChange = {dialogDisplayName = it}
+                                                onValueChange = { dialogDisplayName = it }
                                             )
                                         },
                                         confirmButton = {
@@ -159,7 +161,10 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                                 onClick = {
                                                     displayName = dialogDisplayName
                                                     user?.displayName = dialogDisplayName
-                                                    profileViewModel.updateUser(user!!, user!!.email)
+                                                    profileViewModel.updateUser(
+                                                        user!!,
+                                                        user!!.email
+                                                    )
                                                     nameDialog = false
                                                 }
                                             ) {
@@ -277,7 +282,7 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                 )
             }
             item {
-                user?.reviews?.forEachIndexed { index, it ->
+                user!!.reviews.forEachIndexed { index, it ->
                     var rating by remember { mutableIntStateOf(it.rating) }
                     var description by remember { mutableStateOf(it.description) }
                     var reviewDialog by remember { mutableStateOf(false) }
@@ -513,10 +518,9 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                         Button(
                                             onClick = {
 
-                                                Log.d("TAG", "${user!!.reviews}")
                                                 user?.reviews?.removeAt(index)
-                                                profileViewModel.updateUser(user!!, user!!.email)
-                                                Log.d("TAG", "${user!!.reviews}")
+                                                navController.navigate("profile")
+//                                                profileViewModel.updateUser(user!!, user!!.email)
                                                 reviewDeleteDialog = false
                                             }
                                         ) {
