@@ -45,6 +45,31 @@ class FirebaseApi {
                             println("Error saving Trip $index: $it")
                         }
                 }
+                // Remove the trips that are not in the user's trips list
+                db.collection("User")
+                    .document(userId)
+                    .collection("trips")
+                    .get()
+                    .addOnSuccessListener { querySnapshot ->
+                        for (document in querySnapshot) {
+                            val trip = document.toObject(Trip::class.java)
+                            if (trip != null && !user.trips.contains(trip)) {
+                                document.reference.delete()
+                                    .addOnSuccessListener {
+                                        println("Trip deleted successfully!")
+                                    }
+                                    .addOnFailureListener {
+                                        println("Error deleting Trip: $it")
+                                    }
+                            }
+                        }
+                    }
+                    .addOnFailureListener {
+                        println("Error getting trips: $it")
+                    }
+
+
+
                 // Save Profile subcollection
                 user.profile.forEachIndexed { index, profile ->
                     db.collection("User")
@@ -59,6 +84,30 @@ class FirebaseApi {
                             println("Error saving Profile $index: $it")
                         }
                 }
+                // Remove the Profile that are not in the user's Profile list
+                db.collection("User")
+                    .document(userId)
+                    .collection("profile")
+                    .get()
+                    .addOnSuccessListener { querySnapshot ->
+                        for (document in querySnapshot) {
+                            val profile = document.toObject(Profile::class.java)
+                            if (profile != null && !user.profile.contains(profile)) {
+                                document.reference.delete()
+                                    .addOnSuccessListener {
+                                        println("Profile deleted successfully!")
+                                    }
+                                    .addOnFailureListener {
+                                        println("Error deleting Profile: $it")
+                                    }
+                            }
+                        }
+                    }
+                    .addOnFailureListener {
+                        println("Error getting Profile: $it")
+                    }
+
+
                 // Save Reviews subcollection
                 val newReviewIds = user.reviews.map { it.reviewId }
                 user.reviews.forEachIndexed { index, review ->
