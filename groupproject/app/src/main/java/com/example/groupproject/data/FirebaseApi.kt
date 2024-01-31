@@ -45,6 +45,31 @@ class FirebaseApi {
                             println("Error saving Trip $index: $it")
                         }
                 }
+                // Remove the trips that are not in the user's trips list
+                db.collection("User")
+                    .document(userId)
+                    .collection("trips")
+                    .get()
+                    .addOnSuccessListener { querySnapshot ->
+                        for (document in querySnapshot) {
+                            val trip = document.toObject(Trip::class.java)
+                            if (trip != null && !user.trips.contains(trip)) {
+                                document.reference.delete()
+                                    .addOnSuccessListener {
+                                        println("Trip deleted successfully!")
+                                    }
+                                    .addOnFailureListener {
+                                        println("Error deleting Trip: $it")
+                                    }
+                            }
+                        }
+                    }
+                    .addOnFailureListener {
+                        println("Error getting trips: $it")
+                    }
+
+
+
                 // Save Profile subcollection
                 user.profile.forEachIndexed { index, profile ->
                     db.collection("User")
@@ -59,6 +84,30 @@ class FirebaseApi {
                             println("Error saving Profile $index: $it")
                         }
                 }
+                // Remove the Profile that are not in the user's Profile list
+                db.collection("User")
+                    .document(userId)
+                    .collection("profile")
+                    .get()
+                    .addOnSuccessListener { querySnapshot ->
+                        for (document in querySnapshot) {
+                            val profile = document.toObject(Profile::class.java)
+                            if (profile != null && !user.profile.contains(profile)) {
+                                document.reference.delete()
+                                    .addOnSuccessListener {
+                                        println("Profile deleted successfully!")
+                                    }
+                                    .addOnFailureListener {
+                                        println("Error deleting Profile: $it")
+                                    }
+                            }
+                        }
+                    }
+                    .addOnFailureListener {
+                        println("Error getting Profile: $it")
+                    }
+
+
                 // Save Reviews subcollection
                 val newReviewIds = user.reviews.map { it.reviewId }
                 user.reviews.forEachIndexed { index, review ->
@@ -374,7 +423,7 @@ class FirebaseApi {
                         .addOnSuccessListener { reviewsSnapshot ->
                             val reviewsList = reviewsSnapshot.toObjects(Review::class.java)
                             destination.reviews = reviewsList
-
+                            destination.destinationId = document.id
                             destinationList.add(destination)
 
                             // Check if it's the last document, then call the callback
@@ -769,6 +818,69 @@ class FirebaseApi {
                 // 文件上传失败
                 println("文件上传失败: $e")
                 callback(null) // 传递 null 表示失败
+            }
+    }
+
+    fun addDestinationToTrip(destination: Destination, user: User, trip: Trip) {
+        // 获取用户文档的引用
+        val userTrips = db.collection("User").document(user.userId).collection("trips")
+        // 获取旅行文档的引用
+        val tripRef = userTrips.document(trip.tripId)
+        // 获取旅行的目的地列表
+        val destinations = trip.destinationList.toMutableList()
+        destinations.add(destination.name)
+        // 更新旅行的目的地列表
+        tripRef.update("destinationList", destinations)
+            .addOnSuccessListener {
+                println("目的地添加成功")
+            }
+            .addOnFailureListener {
+                println("目的地添加失败: $it")
+            }
+    }
+
+    fun toggleLike(destination: Destination) {
+        // 获取目的地文档的引用
+        val destinationRef = db.collection("Destination").document(destination.name)
+        // 更新目的地的点赞数
+        destinationRef.update("likes", FieldValue.increment(1))
+            .addOnSuccessListener {
+                println("点赞成功")
+            }
+            .addOnFailureListener {
+                println("点赞失败: $it")
+            }
+    }
+
+    fun saveUserSaves(destination: Destination, user: User) {
+        // 获取用户文档的引用
+        val userRef = db.collection("User").document(user.userId)
+        // 获取用户的收藏列表
+        val saves = user.saves.toMutableList()
+        saves.add(destination.name)
+        // 更新用户的收藏列表
+        userRef.update("saves", saves)
+            .addOnSuccessListener {
+                println("收藏成功")
+            }
+            .addOnFailureListener {
+                println("收藏失败: $it")
+            }
+    }
+
+    fun removeDestinationFromSaved(destination: Destination, user: User) {
+        // 获取用户文档的引用
+        val userRef = db.collection("User").document(user.userId)
+        // 获取用户的收藏列表
+        val saves = user.saves.toMutableList()
+        saves.remove(destination.name)
+        // 更新用户的收藏列表
+        userRef.update("saves", saves)
+            .addOnSuccessListener {
+                println("取消收藏成功")
+            }
+            .addOnFailureListener {
+                println("取消收藏失败: $it")
             }
     }
 }

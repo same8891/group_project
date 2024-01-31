@@ -7,7 +7,7 @@ data class Destination(
     val images: List<String> = emptyList(),
     val likes: Int = 0,
     val localCurrencies: List<String> = emptyList(),
-    val localLanguage: List<String> = emptyList(),
+    val localLanguages: List<String> = emptyList(),
     val location: String = "",
     val name: String = "",
     val price: Price = Price(),
