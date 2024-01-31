@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
@@ -113,82 +114,123 @@ fun settingScreen(navController: NavHostController, settingsViewModel: settingVi
         )
         var expanded by remember { mutableStateOf(false) }
         var select by remember { mutableStateOf(user!!.currency) }
-        val list = arrayOf("USD","AED","AFN","ALL","AMD","ANG","AOA","ARS","AUD","AWG","AZN","BAM","BBD","BDT","BGN","BHD","BIF","BMD","BND","BOB","BRL","BSD","BTN","BWP","BYN","BZD","CAD","CDF","CHF","CLP","CNY","COP","CRC","CUP","CVE","CZK","DJF","DKK","DOP","DZD","EGP","ERN","ETB","EUR","FJD","FKP","FOK","GBP","GEL","GGP","GHS","GIP","GMD","GNF","GTQ","GYD","HKD","HNL","HRK","HTG","HUF","IDR","ILS","IMP","INR","IQD","IRR","ISK","JEP","JMD","JOD","JPY","KES","KGS","KHR","KID","KMF","KRW","KWD","KYD","KZT","LAK","LBP","LKR","LRD","LSL","LYD","MAD","MDL","MGA","MKD","MMK","MNT","MOP","MRU","MUR","MVR","MWK","MXN","MYR","MZN","NAD","NGN","NIO","NOK","NPR","NZD","OMR","PAB","PEN","PGK","PHP","PKR","PLN","PYG","QAR","RON","RSD","RUB","RWF","SAR","SBD","SCR","SDG","SEK","SGD","SHP","SLE","SLL","SOS","SRD","SSP","STN","SYP","SZL","THB","TJS","TMT","TND","TOP","TRY","TTD","TVD","TWD","TZS","UAH","UGX","UYU","UZS","VES","VND","VUV","WST","XAF","XCD","XDR","XOF","XPF","YER","ZAR","ZMW","ZWL")
+        val list = arrayOf("USD","CNY","EUR","GPB","JPY")
+        val country = arrayOf(R.raw.usd, R.raw.cny, R.raw.eur, R.raw.gpb, R.raw.jpy)
+        var countryId = when (select) {
+                "USD" -> {
+                    R.raw.usd
+                }
+                "CNY" -> {
+                    R.raw.cny
+                }
+                "EUR" -> {
+                    R.raw.eur
+                }
+                "GPB" -> {
+                    R.raw.gpb
+                }
+                else -> {
+                    R.raw.jpy
+                }
+            }
         val icon = if (expanded) {
             Icons.Outlined.KeyboardArrowUp
         } else {
             Icons.Outlined.KeyboardArrowDown
         }
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = {
-                expanded = !expanded
-            },
-            modifier = Modifier
-                .width(300.dp)
+        Row(
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(
-                value = select,
-                onValueChange = { },
-                placeholder = {
-                    Text(text = select)
-                },
-                readOnly = true,
-                trailingIcon = {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = "Arrow"
-                    )
-                },
-                modifier = Modifier.menuAnchor()
+            Image(
+                painter = painterResource(id = countryId),
+                contentDescription = "Country",
+                modifier = Modifier.size(30.dp)
             )
-            ExposedDropdownMenu(
+            Spacer(modifier = Modifier.padding(horizontal = 20.dp))
+            ExposedDropdownMenuBox(
                 expanded = expanded,
-                onDismissRequest = { expanded = false },
+                onExpandedChange = {
+                    expanded = !expanded
+                },
                 modifier = Modifier
-                    .height(300.dp),
+                    .width(300.dp)
             ) {
-                list.forEach {
-                    var currencyDialog by remember { mutableStateOf(false) }
-                    DropdownMenuItem(
-                        text = {
-                            Text(text = it)
-                        },
-                        onClick = {
-                            currencyDialog = true
-                        }
-                    )
-                    if (currencyDialog) {
-                        AlertDialog(
-                            onDismissRequest = { currencyDialog = false },
-                            title = {
-                                Text(
-                                    text = "Change to $it"
-                                )
-                            },
-                            confirmButton = {
-                                Button(
-                                    onClick = {
-
-                                        select = it
-                                        currencyDialog = false
-                                        expanded = false
-                                    }
-                                ) {
-                                    Text("Confirm")
-                                }
-                            },
-                            dismissButton = {
-                                Button(
-                                    onClick = {
-                                        currencyDialog = false
-                                    }
-                                ) {
-                                    Text("Cancel")
-                                }
-                            },
-                            containerColor = MaterialTheme.colorScheme.inversePrimary
+                OutlinedTextField(
+                    value = select,
+                    onValueChange = { },
+                    placeholder = {
+                        Text(text = select)
+                    },
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = "Arrow"
                         )
+                    },
+                    modifier = Modifier.menuAnchor()
+                )
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier
+                        .height(250.dp),
+                ) {
+                    list.forEachIndexed() { index, it ->
+                        var currencyDialog by remember { mutableStateOf(false) }
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = country[index]),
+                                        contentDescription = "Country",
+                                        modifier = Modifier.size(30.dp)
+                                    )
+                                    Spacer(modifier = Modifier.padding(horizontal = 10.dp))
+                                    Text(text = it)
+                                }
+                            },
+                            onClick = {
+                                currencyDialog = true
+                            }
+                        )
+                        if (currencyDialog) {
+                            AlertDialog(
+                                onDismissRequest = { currencyDialog = false },
+                                title = {
+                                    Text(
+                                        text = "Change to $it"
+                                    )
+                                },
+                                confirmButton = {
+                                    Button(
+                                        onClick = {
+                                            select = it
+
+                                            user?.currency = it
+                                            settingsViewModel.updateUser(user!!, user!!.email)
+
+                                            currencyDialog = false
+                                            expanded = false
+                                        }
+                                    ) {
+                                        Text("Confirm")
+                                    }
+                                },
+                                dismissButton = {
+                                    Button(
+                                        onClick = {
+                                            currencyDialog = false
+                                        }
+                                    ) {
+                                        Text("Cancel")
+                                    }
+                                },
+                                containerColor = MaterialTheme.colorScheme.inversePrimary
+                            )
+                        }
                     }
                 }
             }
@@ -350,7 +392,7 @@ fun settingScreen(navController: NavHostController, settingsViewModel: settingVi
             )
             Spacer(modifier = Modifier.padding(horizontal = 1.dp))
             Text(
-                text = "Sign Up",
+                text = "Logout",
                 fontSize = MaterialTheme.typography.bodyLarge.fontSize
             )
         }

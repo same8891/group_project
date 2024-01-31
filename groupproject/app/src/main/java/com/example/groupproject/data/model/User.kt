@@ -2,7 +2,7 @@ package com.example.groupproject.data.model
 
 data class User(
     var userId: String = "",
-    val currency: String = "",
+    var currency: String = "",
     var displayName: String = "",
     val email: String = "",
     val password: String = "",
