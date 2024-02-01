@@ -1,5 +1,6 @@
 package com.example.groupproject.ui.trips
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,6 +39,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,6 +58,7 @@ fun EditTripDialog(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val list = AllDestination.subtract(trip.destinationList).toList()
+    Log.d("dl","$trip.destinationList")
     var select by remember { mutableStateOf(if (list.isNotEmpty()) list[0] else "") }
     val icon = if (expanded) {
         Icons.Outlined.KeyboardArrowUp
@@ -92,23 +96,14 @@ fun EditTripDialog(
                 )
             },
             text={
-                Column (modifier = Modifier.fillMaxWidth().background(Color.White)){
-                    IconButton(
-                        onClick = { onDismissRequest() },
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .align(Alignment.End)
-                    ) {
-                        Icon(imageVector = Icons.Default.Close, contentDescription = "Close")
-                    }
-                }
                 Column(
                     modifier = Modifier
-    //                    .padding(16.dp)
-                        .fillMaxWidth()
-                        .background(Color.White)
+                        //                    .padding(16.dp)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.Center
+
                 ) {
-                    Row (horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth().background(Color.White)){
+                    Row (horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()){
                         ExposedDropdownMenuBox(
                             expanded = expanded,
                             onExpandedChange = {
@@ -154,7 +149,7 @@ fun EditTripDialog(
                         }
                         Button(
                             onClick = {
-    //                        Add it to destination list
+                                //                        Add it to destination list
                             },
                             modifier = Modifier.padding(start = 12.dp)
                         ) {
@@ -162,14 +157,24 @@ fun EditTripDialog(
                         }
 
                     }
-                    LazyColumn(modifier = Modifier.size(300.dp)) {
-                        items(trip.destinationList) { destination ->
-                            showitem(
-                                itemName = destination,
-                                onUpClick = { /* Handle up arrow click */ },
-                                onDownClick = { /* Handle down arrow click */ },
-                                onDeleteClick = { /* Handle delete button click */ }
-                            )
+                    Log.d("trip destination","$trip.destinationList.size")
+                    if(trip.destinationList.size > 0) {
+                        LazyColumn(
+                            modifier = Modifier.size(300.dp).align(Alignment.CenterHorizontally)
+                        ) {
+                            items(trip.destinationList) { destination ->
+                                showitem(
+                                    itemName = destination,
+                                    onUpClick = { /* Handle up arrow click */ },
+                                    onDownClick = { /* Handle down arrow click */ },
+                                    onDeleteClick = { /* Handle delete button click */ }
+                                )
+                            }
+                        }
+                    }
+                    else{
+                        Box(modifier = Modifier.align(Alignment.CenterHorizontally).size(300.dp) ){
+                            Text(text = "The trip is empty",modifier = Modifier.align(Alignment.Center))
                         }
                     }
                 }
