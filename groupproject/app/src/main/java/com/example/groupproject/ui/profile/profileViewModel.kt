@@ -4,6 +4,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.groupproject.data.FirebaseApi
+import com.example.groupproject.data.model.Destination
 import com.example.groupproject.data.model.Profile
 import com.example.groupproject.data.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,6 +63,17 @@ class profileViewModel(private val firebaseApi: FirebaseApi) : ViewModel() {
             if (imageUrl != null) {
                 firebaseApi.updateProfileImage(userId, imageUrl)
             }
+        }
+    }
+
+    fun deleteUserReview(userId: String, reviewId: String, destinationId: String) {
+        firebaseApi.deleteUserReview(userId, reviewId)
+        firebaseApi.deleteDestinationReview(destinationId, reviewId)
+    }
+
+    fun getUserSavedDestinations(userId: String, callback: (List<Destination>) -> Unit) {
+        firebaseApi.getUserSavedDestinations(userId) { destinations ->
+            callback(destinations)
         }
     }
 }

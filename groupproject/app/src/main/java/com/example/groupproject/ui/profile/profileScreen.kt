@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -50,13 +51,17 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.groupproject.R
+import com.example.groupproject.data.model.Destination
 import com.example.groupproject.data.model.User
 import com.example.groupproject.data.model.Profile
 import com.example.groupproject.data.model.Review
 import com.example.groupproject.data.model.Trip
+import com.example.groupproject.ui.destination.destinationCard
+import com.example.groupproject.ui.util.ImageWall
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -72,14 +77,15 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
     val sharedPref: SharedPreferences =
         context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
     val userEmail = sharedPref.getString("email", "") ?: ""
-    var user by remember { mutableStateOf(User())}
+    var user by remember { mutableStateOf(User()) }
     var radio by remember { mutableStateOf("Date") }
+    var ascending by remember { mutableStateOf(true) }
     var userDisplayName by remember { mutableStateOf("") }
     var userProfile by remember { mutableStateOf(Profile()) }
     var userTrips by remember { mutableStateOf(emptyList<Trip>()) }
     var userReviews by remember { mutableStateOf(emptyList<Review>()) }
     var userImage by remember { mutableStateOf("") }
-
+    val destinationList  by remember { mutableStateOf(mutableListOf<Destination>()) }
     LaunchedEffect(key1 = userEmail) {
         profileViewModel.getUser(userEmail) { thisUser ->
             if (thisUser != null) {
@@ -89,7 +95,12 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                 userTrips = user.trips
                 userReviews = user.reviews
                 userImage = user.profile[0].photoImage
+                profileViewModel.getUserSavedDestinations(userEmail) { destinations ->
+                    destinationList.clear()
+                    destinationList.addAll(destinations)
+                }
             }
+
         }
     }
 
@@ -115,76 +126,91 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                 user?.profile?.forEach {
                     // 使用 remember 创建一个可观察的状态以保存图片的URL
                     var uploadImageUrl = remember { mutableStateOf("") }
-                    val getContent = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-                        uri?.let { selectedUri ->
-                            // 选择了图片，你可以在这里处理
-                            user?.let {
-                                profileViewModel.uploadImage(it.userId, uri) { imageUrl: String? ->
-                                    if (imageUrl != null) {
-                                        // 图片上传成功，imageUrl 是上传后的图片URL
-                                        Log.d("SelectedImage", "Image URL: $imageUrl")
-                                        // 返回图片URL
-                                        uploadImageUrl.value = imageUrl
-                                        profileViewModel.updateProfileImageFromUrl(
-                                            user.userId,
-                                            uploadImageUrl.value)
-                                        profileViewModel.getUser(userEmail) { thisUser ->
-                                            if (thisUser != null) {
-                                                user = thisUser
-                                                userDisplayName = user.displayName
-                                                userProfile = user.profile[0]
-                                                userTrips = user.trips
-                                                userReviews = user.reviews
-                                                userImage = user.profile[0].photoImage
+                    val getContent =
+                        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+                            uri?.let { selectedUri ->
+                                // 选择了图片，你可以在这里处理
+                                user?.let {
+                                    profileViewModel.uploadImage(
+                                        it.userId,
+                                        uri
+                                    ) { imageUrl: String? ->
+                                        if (imageUrl != null) {
+                                            // 图片上传成功，imageUrl 是上传后的图片URL
+                                            Log.d("SelectedImage", "Image URL: $imageUrl")
+                                            // 返回图片URL
+                                            uploadImageUrl.value = imageUrl
+                                            profileViewModel.updateProfileImageFromUrl(
+                                                user.userId,
+                                                uploadImageUrl.value
+                                            )
+                                            profileViewModel.getUser(userEmail) { thisUser ->
+                                                if (thisUser != null) {
+                                                    user = thisUser
+                                                    userDisplayName = user.displayName
+                                                    userProfile = user.profile[0]
+                                                    userTrips = user.trips
+                                                    userReviews = user.reviews
+                                                    userImage = user.profile[0].photoImage
+                                                }
                                             }
+                                            Toast.makeText(
+                                                navController.context,
+                                                "Image uploaded successfully with URL: $imageUrl",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } else {
+                                            // 图片上传失败或获取URL失败
+                                            Log.e(
+                                                "SelectedImage",
+                                                "Failed to upload image or get URL"
+                                            )
                                         }
-                                        Toast.makeText(
-                                            navController.context,
-                                            "Image uploaded successfully with URL: $imageUrl",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    } else {
-                                        // 图片上传失败或获取URL失败
-                                        Log.e("SelectedImage", "Failed to upload image or get URL")
                                     }
                                 }
                             }
                         }
-                    }
-                    val uploadImage = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-                        uri?.let { selectedUri ->
-                            // 选择了图片，你可以在这里处理
-                            user?.let {
-                                profileViewModel.uploadImage(it.userId, uri) { imageUrl: String? ->
-                                    if (imageUrl != null) {
-                                        // 图片上传成功，imageUrl 是上传后的图片URL
-                                        Log.d("SelectedImage", "Image URL: $imageUrl")
-                                        // 返回图片URL
-                                        uploadImageUrl.value = imageUrl
-                                        profileViewModel.uploadUserImage(user.userId, imageUrl)
-                                        profileViewModel.getUser(userEmail) { thisUser ->
-                                            if (thisUser != null) {
-                                                user = thisUser
-                                                userDisplayName = user.displayName
-                                                userProfile = user.profile[0]
-                                                userTrips = user.trips
-                                                userReviews = user.reviews
-                                                userImage = user.profile[0].photoImage
+                    val uploadImage =
+                        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+                            uri?.let { selectedUri ->
+                                // 选择了图片，你可以在这里处理
+                                user?.let {
+                                    profileViewModel.uploadImage(
+                                        it.userId,
+                                        uri
+                                    ) { imageUrl: String? ->
+                                        if (imageUrl != null) {
+                                            // 图片上传成功，imageUrl 是上传后的图片URL
+                                            Log.d("SelectedImage", "Image URL: $imageUrl")
+                                            // 返回图片URL
+                                            uploadImageUrl.value = imageUrl
+                                            profileViewModel.uploadUserImage(user.userId, imageUrl)
+                                            profileViewModel.getUser(userEmail) { thisUser ->
+                                                if (thisUser != null) {
+                                                    user = thisUser
+                                                    userDisplayName = user.displayName
+                                                    userProfile = user.profile[0]
+                                                    userTrips = user.trips
+                                                    userReviews = user.reviews
+                                                    userImage = user.profile[0].photoImage
+                                                }
                                             }
+                                            Toast.makeText(
+                                                navController.context,
+                                                "Image uploaded successfully with URL: $imageUrl",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } else {
+                                            // 图片上传失败或获取URL失败
+                                            Log.e(
+                                                "SelectedImage",
+                                                "Failed to upload image or get URL"
+                                            )
                                         }
-                                        Toast.makeText(
-                                            navController.context,
-                                            "Image uploaded successfully with URL: $imageUrl",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    } else {
-                                        // 图片上传失败或获取URL失败
-                                        Log.e("SelectedImage", "Failed to upload image or get URL")
                                     }
                                 }
                             }
                         }
-                    }
                     ElevatedCard(
                         modifier = Modifier
                             .size(
@@ -340,7 +366,6 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    var ascending by remember { mutableStateOf(true) }
                     Text(
                         text = "Ascending",
                         modifier = Modifier.padding(horizontal = 5.dp)
@@ -382,10 +407,32 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                         .background(Color.Gray)
                 )
             }
+
+
             item {
+                Text(text = "My Reviews", modifier = Modifier.padding(10.dp), fontSize = 20.sp)
+            }
+
+            item {
+
+                if (radio == "Date") {
+                    user!!.reviews.sortBy { it.timestamp }
+                    if (!ascending) {
+                        user!!.reviews.reverse()
+                    }
+                } else if (radio == "Location") {
+                    user!!.reviews.sortBy { it.destination }
+                    if (!ascending) {
+                        user!!.reviews.reverse()
+                    }
+                } else if (radio == "Rating") {
+                    user!!.reviews.sortBy { it.rating }
+                    if (!ascending) {
+                        user!!.reviews.reverse()
+                    }
+                }
+
                 user!!.reviews.forEachIndexed { index, it ->
-                    var rating by remember { mutableIntStateOf(it.rating) }
-                    var description by remember { mutableStateOf(it.description) }
                     var reviewDialog by remember { mutableStateOf(false) }
                     Column(
                         modifier = Modifier
@@ -419,35 +466,35 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                     Image(
                                         imageVector = ImageVector.vectorResource(R.drawable.star),
                                         contentDescription = "Star",
-                                        colorFilter = ColorFilter.tint(color = if (rating > 0) Color.Cyan else Color.Gray),
+                                        colorFilter = ColorFilter.tint(color = if (it.rating > 0) Color.Cyan else Color.Gray),
                                         modifier = Modifier.padding(5.dp)
                                     )
                                     Image(
                                         imageVector = ImageVector.vectorResource(R.drawable.star),
                                         contentDescription = "Star",
-                                        colorFilter = ColorFilter.tint(color = if (rating > 1) Color.Cyan else Color.Gray),
+                                        colorFilter = ColorFilter.tint(color = if (it.rating > 1) Color.Cyan else Color.Gray),
                                         modifier = Modifier.padding(5.dp)
                                     )
                                     Image(
                                         imageVector = ImageVector.vectorResource(R.drawable.star),
                                         contentDescription = "Star",
-                                        colorFilter = ColorFilter.tint(color = if (rating > 2) Color.Cyan else Color.Gray),
+                                        colorFilter = ColorFilter.tint(color = if (it.rating > 2) Color.Cyan else Color.Gray),
                                         modifier = Modifier.padding(5.dp)
                                     )
                                     Image(
                                         imageVector = ImageVector.vectorResource(R.drawable.star),
                                         contentDescription = "Star",
-                                        colorFilter = ColorFilter.tint(color = if (rating > 3) Color.Cyan else Color.Gray),
+                                        colorFilter = ColorFilter.tint(color = if (it.rating > 3) Color.Cyan else Color.Gray),
                                         modifier = Modifier.padding(5.dp)
                                     )
                                     Image(
                                         imageVector = ImageVector.vectorResource(R.drawable.star),
                                         contentDescription = "Star",
-                                        colorFilter = ColorFilter.tint(color = if (rating > 4) Color.Cyan else Color.Gray),
+                                        colorFilter = ColorFilter.tint(color = if (it.rating > 4) Color.Cyan else Color.Gray),
                                         modifier = Modifier.padding(5.dp)
                                     )
                                     Text(
-                                        text = rating.toString(),
+                                        text = it.rating.toString(),
                                         modifier = Modifier.padding(
                                             vertical = 5.dp,
                                             horizontal = 30.dp
@@ -455,7 +502,7 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                     )
                                 }
                                 Text(
-                                    text = description,
+                                    text = it.description,
                                     color = Color.Gray,
                                     modifier = Modifier
                                         .padding(horizontal = 5.dp)
@@ -482,8 +529,8 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                 }
                             }
                             if (reviewDialog) {
-                                var dialogDescription by remember { mutableStateOf(description) }
-                                var dialogRating by remember { mutableIntStateOf(rating) }
+                                var dialogDescription by remember { mutableStateOf(it.description) }
+                                var dialogRating by remember { mutableIntStateOf(it.rating) }
                                 AlertDialog(
                                     onDismissRequest = { reviewDialog = false },
                                     title = {
@@ -565,11 +612,19 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                     confirmButton = {
                                         Button(
                                             onClick = {
-                                                rating = dialogRating
-                                                description = dialogDescription
                                                 it.rating = dialogRating
                                                 it.description = dialogDescription
                                                 profileViewModel.updateUser(user!!, user!!.email)
+                                                profileViewModel.getUser(userEmail) { thisUser ->
+                                                    if (thisUser != null) {
+                                                        user = thisUser
+                                                        userDisplayName = user.displayName
+                                                        userProfile = user.profile[0]
+                                                        userTrips = user.trips
+                                                        userReviews = user.reviews
+                                                        userImage = user.profile[0].photoImage
+                                                    }
+                                                }
                                                 reviewDialog = false
                                             }
                                         ) {
@@ -579,6 +634,16 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                     dismissButton = {
                                         Button(
                                             onClick = {
+                                                profileViewModel.getUser(userEmail) { thisUser ->
+                                                    if (thisUser != null) {
+                                                        user = thisUser
+                                                        userDisplayName = user.displayName
+                                                        userProfile = user.profile[0]
+                                                        userTrips = user.trips
+                                                        userReviews = user.reviews
+                                                        userImage = user.profile[0].photoImage
+                                                    }
+                                                }
                                                 reviewDialog = false
                                             }
                                         ) {
@@ -588,6 +653,7 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                     containerColor = MaterialTheme.colorScheme.inversePrimary
                                 )
                             }
+
                             var reviewDeleteDialog by remember { mutableStateOf(false) }
                             Image(
                                 imageVector = ImageVector.vectorResource(R.drawable.delete),
@@ -618,10 +684,21 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                     confirmButton = {
                                         Button(
                                             onClick = {
-
-                                                user?.reviews?.removeAt(index)
-//                                                navController.navigate("profile")
-//                                                profileViewModel.updateUser(user!!, user!!.email)
+                                                profileViewModel.deleteUserReview(
+                                                    user.userId,
+                                                    it.reviewId,
+                                                    it.destination
+                                                )
+                                                profileViewModel.getUser(userEmail) { thisUser ->
+                                                    if (thisUser != null) {
+                                                        user = thisUser
+                                                        userDisplayName = user.displayName
+                                                        userProfile = user.profile[0]
+                                                        userTrips = user.trips
+                                                        userReviews = user.reviews
+                                                        userImage = user.profile[0].photoImage
+                                                    }
+                                                }
                                                 reviewDeleteDialog = false
                                             }
                                         ) {
@@ -650,7 +727,27 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                     )
                 }
             }
+            item {
+                Text(text = "My images", modifier = Modifier.padding(10.dp), fontSize = 20.sp)
+            }
+            item {
+                ImageWall(userProfile.uploadImages)
+            }
+            item {
+                Text(
+                    text = "My Saved Destinations",
+                    modifier = Modifier.padding(10.dp),
+                    fontSize = 20.sp
+                )
+            }
+            item {
+                destinationList.forEach {
+                    Log.d("profileScreen", "profileScreen: $it")
+                    destinationCard(navController, it)
+                }
+            }
         }
+
     }
 }
 

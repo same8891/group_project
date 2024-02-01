@@ -951,4 +951,131 @@ class FirebaseApi {
                 println("获取图片列表失败: $it")
             }
     }
+
+    fun deleteUserReview(userId: String, reviewId: String) {
+        // 获取用户文档的引用
+        val userRef = db.collection("User").document(userId)
+        // 获取用户的评论列表
+        userRef.collection("reviews")
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val reviews = querySnapshot.toObjects(Review::class.java)
+                val newReviews = reviews.filter { it.reviewId != reviewId }
+                // 更新用户的评论列表
+                userRef.collection("reviews")
+                    .get()
+                    .addOnSuccessListener { querySnapshot ->
+                        for (document in querySnapshot) {
+                            if (document.id == reviewId) {
+                                document.reference.delete()
+                                    .addOnSuccessListener {
+                                        println("评论删除成功")
+                                    }
+                                    .addOnFailureListener {
+                                        println("评论删除失败: $it")
+                                    }
+                            }
+                        }
+                    }
+                    .addOnFailureListener {
+                        println("获取评论列表失败: $it")
+                    }
+            }
+            .addOnFailureListener {
+                println("获取评论列表失败: $it")
+            }
+    }
+
+    fun deleteDestinationReview(destinationId: String, reviewId: String) {
+        // 获取目的地文档的引用
+        val destinationRef = db.collection("Destination").document(destinationId)
+        // 获取目的地的评论列表
+        destinationRef.collection("reviews")
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                for (document in querySnapshot) {
+                    if (document.id == reviewId) {
+                        document.reference.delete()
+                            .addOnSuccessListener {
+                                println("评论删除成功")
+                            }
+                            .addOnFailureListener {
+                                println("评论删除失败: $it")
+                            }
+                    }
+                }
+            }
+            .addOnFailureListener {
+                println("获取评论列表失败: $it")
+            }
+    }
+
+    fun getUserSavedDestinations(userId: String, callback: (List<Destination>) -> Unit) {
+        println("获取${userId}的收藏列表")
+        // 获取用户文档的引用
+        val userRef = db.collection("User").document(userId)
+
+        // 获取全部的Destination的name
+        val destinationNameList = mutableListOf<String>()
+        db.collection("Destination")
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                for (document in querySnapshot) {
+                    val destination = document.toObject(Destination::class.java)
+                    destinationNameList.add(destination.name)
+                }
+                println("获取全部的Destination的name: $destinationNameList")
+
+
+
+                // 获取用户的收藏列表
+                println("获取用户的收藏列表")
+                val saves = mutableListOf<String>()
+                userRef.get()
+                    .addOnSuccessListener { documentSnapshot ->
+                        val user = documentSnapshot.toObject(User::class.java)
+                        if (user != null) {
+                            saves.addAll(user.saves)
+                            println("获取用户的收藏列表: $saves")
+                        }
+
+
+
+
+                        // 筛选出用户收藏的Destination与全部的Destination的name匹配的Destination
+                        saves.forEach() {
+                            if (!destinationNameList.contains(it)) {
+                                saves.remove(it)
+                            }
+                        }
+                        // 获取用户收藏的Destination
+                        println("获取用户收藏的Destination: $saves")
+                        val savedDestinations = mutableListOf<Destination>()
+                        saves.forEach() {
+                            db.collection("Destination")
+                                .whereEqualTo("name", it)
+                                .get()
+                                .addOnSuccessListener { querySnapshot ->
+                                    if (!querySnapshot.isEmpty) {
+                                        println("获取")
+                                        val destination = querySnapshot.documents[0].toObject(Destination::class.java)
+                                        if (destination != null) {
+                                            savedDestinations.add(destination)
+                                            callback(savedDestinations)
+                                        }
+                                    }
+                                }
+                                .addOnFailureListener {
+                                    println("获取用户收藏的Destination失败: $it")
+                                }
+                        }
+                    }
+                    .addOnFailureListener {
+                        println("获取用户收藏失败: $it")
+                    }
+            }
+            .addOnFailureListener {
+                println("获取Destination失败: $it")
+            }
+    }
 }
