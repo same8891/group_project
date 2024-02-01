@@ -608,7 +608,20 @@ class FirebaseApi {
         db.collection("Destination")
             .document(destinationId)
             .collection("reviews")
-            .add(review)
+            .document(review.reviewId + destinationId)
+            .set(review)
+            .addOnSuccessListener {
+                println("评论保存成功")
+            }
+            .addOnFailureListener {
+                println("评论保存失败: $it")
+            }
+        //add user review
+        db.collection("User")
+            .document(review.userId)
+            .collection("reviews")
+            .document(review.reviewId + destinationId)
+            .set(review)
             .addOnSuccessListener {
                 println("评论保存成功")
             }
@@ -1076,6 +1089,30 @@ class FirebaseApi {
             }
             .addOnFailureListener {
                 println("获取Destination失败: $it")
+            }
+    }
+
+    fun updateDestinationReview(destination: String, reviewId: String, review: Review) {
+        // 获取目的地文档的引用
+        val destinationRef = db.collection("Destination").document(destination)
+        // 获取目的地的评论列表
+        destinationRef.collection("reviews")
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                for (document in querySnapshot) {
+                    if (document.id == reviewId) {
+                        document.reference.set(review)
+                            .addOnSuccessListener {
+                                println("评论更新成功")
+                            }
+                            .addOnFailureListener {
+                                println("评论更新失败: $it")
+                            }
+                    }
+                }
+            }
+            .addOnFailureListener {
+                println("获取评论列表失败: $it")
             }
     }
 }

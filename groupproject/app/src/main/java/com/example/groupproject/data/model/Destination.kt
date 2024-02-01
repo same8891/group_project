@@ -11,6 +11,6 @@ data class Destination(
     val location: String = "",
     val name: String = "",
     val price: Price = Price(),
-    var reviews: List<Review> = emptyList(),
+    var reviews: MutableList<Review> = mutableListOf(),
     var tags: List<String> = emptyList()
 )

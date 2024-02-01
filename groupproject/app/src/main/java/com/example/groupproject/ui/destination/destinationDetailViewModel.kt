@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.groupproject.data.FirebaseApi
 import com.example.groupproject.data.model.Destination
+import com.example.groupproject.data.model.Review
 import com.example.groupproject.data.model.Trip
 import com.example.groupproject.data.model.User
+import com.google.firebase.Timestamp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -78,6 +80,25 @@ class destinationDetailViewModel(private val firebaseApi: FirebaseApi) : ViewMod
             firebaseApi.getUserByEmail(userId) { result ->
                 if (result != null) {
                     callback(result.profile[0].photoImage)
+                }
+            }
+        }
+    }
+
+    fun addReview(destination: Destination, userEmail: String, rating: Int, reviewText: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            firebaseApi.getUserByEmail(userEmail) { user ->
+                if (user != null) {
+                    val review = Review(
+                        reviewId = userEmail,
+                        userId = userEmail,
+                        rating = rating,
+                        description = reviewText,
+                        timestamp = Timestamp.now(),
+                        destination = destination.name,
+                        photos = listOf(user.profile[0].photoImage),
+                    )
+                    firebaseApi.addReview(review, destination.name)
                 }
             }
         }

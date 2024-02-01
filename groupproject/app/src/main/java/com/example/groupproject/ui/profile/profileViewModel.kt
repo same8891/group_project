@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.example.groupproject.data.FirebaseApi
 import com.example.groupproject.data.model.Destination
 import com.example.groupproject.data.model.Profile
+import com.example.groupproject.data.model.Review
 import com.example.groupproject.data.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -75,5 +76,13 @@ class profileViewModel(private val firebaseApi: FirebaseApi) : ViewModel() {
         firebaseApi.getUserSavedDestinations(userId) { destinations ->
             callback(destinations)
         }
+    }
+
+    fun removeDestinationReview(destination: String, reviewId: String) {
+        firebaseApi.deleteDestinationReview(destination, reviewId)
+    }
+
+    fun updateDestinationReview(destination: String, reviewId: String, it: Review) {
+        firebaseApi.updateDestinationReview(destination, reviewId, it)
     }
 }

@@ -443,8 +443,14 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                             modifier = Modifier.fillMaxSize(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            var photoUrl = ""
+                            if (it.photos.isNotEmpty()){
+                                photoUrl = it.photos[0]
+                            }else{
+                                photoUrl = "https://firebasestorage.googleapis.com/v0/b/groupproject-4f97b.appspot.com/o/%E5%A4%B4%E5%83%8F.jpeg?alt=media&token=2c237a06-8257-448a-b901-9c00f91fbf78"
+                            }
                             Image(
-                                painter = rememberAsyncImagePainter(model = it.photos[0]),
+                                painter = rememberAsyncImagePainter(model = photoUrl),
                                 contentDescription = "Review Picture",
                                 modifier = Modifier
                                     .padding(horizontal = 20.dp)
@@ -615,6 +621,11 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                                 it.rating = dialogRating
                                                 it.description = dialogDescription
                                                 profileViewModel.updateUser(user!!, user!!.email)
+                                                profileViewModel.updateDestinationReview(
+                                                    it.destination,
+                                                    it.reviewId,
+                                                    it
+                                                )
                                                 profileViewModel.getUser(userEmail) { thisUser ->
                                                     if (thisUser != null) {
                                                         user = thisUser
@@ -699,7 +710,12 @@ fun profileScreen(navController: NavController, profileViewModel: profileViewMod
                                                         userImage = user.profile[0].photoImage
                                                     }
                                                 }
+                                                profileViewModel.removeDestinationReview(
+                                                    it.destination,
+                                                    it.reviewId
+                                                )
                                                 reviewDeleteDialog = false
+
                                             }
                                         ) {
                                             Text("Confirm")

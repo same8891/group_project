@@ -55,10 +55,12 @@ import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.groupproject.data.model.Destination
+import com.example.groupproject.data.model.Review
 import com.example.groupproject.data.model.User
 import com.example.groupproject.ui.trips.AddTripDialog
 import com.example.groupproject.ui.trips.tripsViewModel
 import com.example.groupproject.ui.util.ImageWall
+import com.google.firebase.Timestamp
 import com.yisheng.shoppingapplication.ui.home.ImageSlider
 
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -156,7 +158,10 @@ fun destinationDetailScreen(
                                 "Remove From list",
                                 Toast.LENGTH_SHORT
                             ).show()
-                            destinationDetailViewModel.removeDestinationFromSaved(destination!!, user)
+                            destinationDetailViewModel.removeDestinationFromSaved(
+                                destination!!,
+                                user
+                            )
                             destinationDetailViewModel.getUser(user.email) {
                                 user = it ?: User()
                             }
@@ -176,7 +181,8 @@ fun destinationDetailScreen(
                     Icon(
                         imageVector = Icons.Default.Bookmark,
                         contentDescription = "Save to list",
-                        tint = user.saves.find { it == destination!!.name }?.let { Color.Red } ?: Color.Gray,
+                        tint = user.saves.find { it == destination!!.name }?.let { Color.Red }
+                            ?: Color.Gray,
                         modifier = Modifier
                             .size(50.dp)
                     )
@@ -511,6 +517,7 @@ private fun DestinationReviews(
 ) {
 
     var reviewDialogShown by remember { mutableStateOf(false) }
+    var reviews by remember { mutableStateOf(destination.reviews) }
     // Review dialog
     if (reviewDialogShown) {
         Box(
@@ -518,21 +525,51 @@ private fun DestinationReviews(
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.5f))
         ) {
-            reviewdialog(
-                destination = destination,
-                isDestinationReviewed = false,
-                rating = 5,
-                reviewText = "",
-                onDismiss = { reviewDialogShown = false },
-                onSubmit = { rating, reviewText ->
-                    destinationDetailViewModel.updateReviewLikes("userId", 1)
-                    reviewDialogShown = false
-                }
-            )
+            val sharedPref: SharedPreferences =
+                navController.context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
+            val userEmail = sharedPref.getString("email", "") ?: ""
+            if (destination.reviews.contains(destination.reviews.find { it.userId == userEmail })) {
+                Toast.makeText(
+                    navController.context,
+                    "You have already reviewed this destination",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                reviewdialog(
+                    destination = destination,
+                    isDestinationReviewed = false,
+                    rating = 5,
+                    reviewText = "",
+                    onDismiss = { reviewDialogShown = false },
+                    onSubmit = { rating, reviewText ->
+                        destinationDetailViewModel.addReview(
+                            destination,
+                            userEmail,
+                            rating,
+                            reviewText
+                        )
+                        reviews.add(
+                            Review(
+                                reviewId = userEmail+destination.name,
+                                userId = userEmail,
+                                rating = rating,
+                                description = reviewText,
+                                timestamp = Timestamp.now()
+                            )
+                        )
+                        Toast.makeText(
+                            navController.context,
+                            "Review submitted successfully",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        reviewDialogShown = false
+                    }
+                )
+            }
         }
     }
     // Displaying reviews
-    if (destination.reviews.isNotEmpty()) {
+    if (reviews.isNotEmpty()) {
         // Button to write a review
         Button(
             onClick = {
@@ -546,7 +583,7 @@ private fun DestinationReviews(
         }
         // Count the number of reviews for each star rating
         val starRatingsCount = mutableMapOf<Int, Int>().withDefault { 0 }
-        destination.reviews.forEach { review ->
+        reviews.forEach { review ->
             starRatingsCount[review.rating] = starRatingsCount.getValue(review.rating) + 1
         }
 
@@ -560,7 +597,7 @@ private fun DestinationReviews(
             Text("$stars: $count", modifier = Modifier.padding(top = 4.dp))
         }
 
-        destination.reviews.forEach { review ->
+        reviews.forEach { review ->
             reviewCard(review = review, destinationDetailViewModel = destinationDetailViewModel)
         }
     }
