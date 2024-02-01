@@ -2,12 +2,11 @@ package com.example.groupproject.data.model
 
 data class Trip(
     var tripId: String = "",
-    val collaborators: List<String> = emptyList(),
+    val title: String = "",
+    val numberOfPeople: Int=0,
     val description: String = "",
-    val destinationList: List<String> = emptyList(),
+    var destinationList: MutableList<String> = ArrayList(),
     val startDate: String = "",
     val endDate: String = "",
-    val isPrivate: Boolean = false,
-    val title: String = "",
-    var numberOfPeople: Int = 0
+    val isPrivate: Boolean = false
 )
