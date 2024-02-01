@@ -1,5 +1,6 @@
 package com.example.groupproject.ui.trips
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,13 +13,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,11 +24,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.groupproject.data.model.Destination
 import com.example.groupproject.data.model.Trip
 
 @Composable
@@ -38,12 +34,37 @@ fun TripCard(trip: Trip, navHostController: NavHostController, tripsViewModel: t
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
 
+    tripsViewModel.getAllDestinationIds()
+    val allDestinationIds=tripsViewModel.destinationIds
+    Log.d("TripCard's DestinationIds", "$allDestinationIds")
     ElevatedCard(
+//        modifier = Modifier.clickable {
+//            expanded = !expanded
+//        } ,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            containerColor = MaterialTheme.colorScheme.surfaceTint,
         ),
         elevation = CardDefaults.elevatedCardElevation()
+
     ){
+        Column(){
+//            if (expanded) {
+//                if (des.isEmpty()){
+//                    Text(text="No destinations added")
+//                }else{
+//                    LazyColumn(
+//                    ) {
+//                        items(des.size) {
+//                            des.forEach{
+//                                DestCard(destName = it)
+//                            }
+//                            Spacer(modifier = Modifier.height(16.dp))
+//                        }
+//                    }
+//                }
+//
+//
+//            }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -87,8 +108,10 @@ fun TripCard(trip: Trip, navHostController: NavHostController, tripsViewModel: t
                     EditTripDialog(
                         showEditDialog = showEditDialog,
                         trip = Trip(),
-                        AllDestination=trip.destinationList,
-                        onDismissRequest = { showEditDialog=false}
+                        AllDestination=allDestinationIds,
+                        onDismissRequest = { showEditDialog=false},
+                        tripsViewModel=tripsViewModel,
+                        navHostController = navHostController
                     )
                 }
                 Box(){
@@ -105,7 +128,7 @@ fun TripCard(trip: Trip, navHostController: NavHostController, tripsViewModel: t
                     )
                 }
             }
-        }
+        }}
     }
 }
 

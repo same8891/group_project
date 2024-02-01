@@ -64,7 +64,7 @@ fun AddTripDialog(
                             numberOfPeople = numberOfPeople.toIntOrNull() ?: 0,
                             isPrivate = !isPublic,
                             description = "",
-                            destinationList = emptyList(),
+                            destinationList = ArrayList(),
                             startDate = "",
                             endDate = "")
                         tripsViewModel.addTrip(userId, newTrip)
