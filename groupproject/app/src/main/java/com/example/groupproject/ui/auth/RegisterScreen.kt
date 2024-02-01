@@ -2,6 +2,7 @@ package com.example.groupproject.ui.auth
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,13 +38,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.groupproject.R
+import com.example.groupproject.data.model.Profile
 import com.example.groupproject.data.model.User
 import com.example.groupproject.ui.util.SvgImage
 import kotlinx.coroutines.launch
@@ -68,7 +73,7 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel) {
     var displayName by remember { mutableStateOf("") }
     // State for success message
     var isSuccessMessageVisible by remember { mutableStateOf(false) }
-
+    var location by remember { mutableStateOf("Washington, D.C") }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -155,6 +160,23 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel) {
         )
 
 
+
+        // Loacation input field
+        OutlinedTextField(
+            value = location,
+            onValueChange = { location = it },
+            label = { Text("Current Location") },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Home,
+                    contentDescription = null
+                )
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        )
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -167,10 +189,8 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel) {
                 modifier = Modifier.padding(end = 8.dp)
             )
 
-            SvgImage(
-                svgData = getCurrencySvg(selectedCurrency),
-                modifier = Modifier.size(24.dp)
-            )
+            Image(bitmap = getCurrencyImage(currency = selectedCurrency),
+                contentDescription = selectedCurrency, modifier = Modifier.size(24.dp))
 
             Text(
                 text = selectedCurrency,
@@ -195,10 +215,8 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel) {
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                SvgImage(
-                                    svgData = getCurrencySvg(currency),
-                                    modifier = Modifier.size(24.dp)
-                                )
+                                Image(bitmap = getCurrencyImage(currency = currency),
+                                    contentDescription = currency, modifier = Modifier.size(24.dp))
                                 Text(text = currency)
                             }
                         }
@@ -225,8 +243,9 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel) {
                     isLoading = false
                     return@Button
                 }
-
-                val user = User(email = email, password = password, displayName = displayName, currency = selectedCurrency)
+                val profile = Profile(location = location, profileId = email)
+                val user = User(email = email, password = password, displayName = displayName,
+                    currency = selectedCurrency, profile = listOf(profile))
                 authViewModel.getUser(email) { fetchedUser ->
                     if (fetchedUser != null) {
                         errorMessage = "User already exists."
@@ -287,8 +306,8 @@ fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel) {
 }
 
 @Composable
-fun getCurrencySvg(currency: String): ByteArray {
-    // Use a function to map currency names to their corresponding SVG resource IDs
+fun getCurrencyImage(currency: String): ImageBitmap {
+    // Use a function to map currency names to their corresponding resource IDs
     val currencyImageResources = mapOf(
         "USD" to R.raw.usd,
         "EUR" to R.raw.eur,
@@ -296,8 +315,7 @@ fun getCurrencySvg(currency: String): ByteArray {
         "GPB" to R.raw.gpb,
         "JPY" to R.raw.jpy
     )
-
-    // Retrieve the SVG data based on the currency
-    val svgResource = currencyImageResources[currency] ?: R.raw.usd
-    return LocalContext.current.resources.openRawResource(svgResource).readBytes()
+    var currencyImage: ImageBitmap? = null
+    currencyImage = ImageBitmap.imageResource(LocalContext.current.resources, currencyImageResources[currency]!!)
+    return currencyImage
 }

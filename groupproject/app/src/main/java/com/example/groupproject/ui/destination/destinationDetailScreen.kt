@@ -57,6 +57,7 @@ import coil.compose.AsyncImage
 import com.example.groupproject.data.model.Destination
 import com.example.groupproject.data.model.User
 import com.example.groupproject.ui.trips.AddTripDialog
+import com.example.groupproject.ui.trips.tripsViewModel
 import com.example.groupproject.ui.util.ImageWall
 import com.yisheng.shoppingapplication.ui.home.ImageSlider
 
@@ -266,11 +267,13 @@ fun destinationDetailScreen(
                         .fillMaxSize()
                         .background(Color.Black.copy(alpha = 0.5f))
                 ) {
-                    AddTripDialog(
-                        showAddDialog = tripDialogShow,
-                        onDismissRequest = { tripDialogShow = false },
-                        onConfirmClick = { tripDialogShow = false }
-                    )
+//                    AddTripDialog(
+//                        showAddDialog = tripDialogShow,
+//                        onDismissRequest = { tripDialogShow = false },
+//                        onConfirmClick = { tripDialogShow = false },
+//                        navHostController = navController,
+//                        tripsViewModel = tripsViewModel(),
+//                    )
                 }
             }
         }
