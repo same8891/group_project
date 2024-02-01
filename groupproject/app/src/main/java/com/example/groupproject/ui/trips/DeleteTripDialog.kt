@@ -1,5 +1,7 @@
 package com.example.groupproject.ui.trips
 
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,15 +24,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.example.groupproject.data.FirebaseApi
 
 @Composable
 fun DeleteTripDialog(
+    navHostController: NavHostController,
     showDeleteDialog: Boolean,
     onDismissRequest: () -> Unit,
     onConfirmClick: () -> Unit,
-    //firebaseApi: FirebaseApi
+    tripId: String,
+    tripsViewModel: tripsViewModel
 ) {
+    val context = navHostController.context
+    val sharedPref: SharedPreferences = context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
+    val userEmail = sharedPref.getString("email", "") ?: ""
+
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = onDismissRequest,
@@ -43,10 +52,10 @@ fun DeleteTripDialog(
             confirmButton = {
                 Button(
                     onClick = {
-                        // Handle the creation of the new trip here
                         onConfirmClick()
                         onDismissRequest()
-                        //firebaseApi.deleteTrip()
+                        tripsViewModel.deleteTrip(userEmail, tripId)
+                        tripsViewModel.getUserTrips(userEmail)
                     },
                     content = {
                         Text("Delete Trip")

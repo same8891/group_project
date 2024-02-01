@@ -22,4 +22,12 @@ class tripsViewModel(private val firebaseApi: FirebaseApi) : ViewModel() {
             }
         }
     }
+
+    fun addTrip(userId: String, newTrip: Trip){
+        firebaseApi.addTrip(userId, newTrip)
+    }
+
+    fun deleteTrip(userId: String, tripId: String) {
+        firebaseApi.deleteTrip(userId, tripId)
+    }
 }

@@ -29,13 +29,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.example.groupproject.data.model.Destination
 import com.example.groupproject.data.model.Trip
 
 @Composable
-fun TripCard(trip: Trip, destination: Destination) {
+fun TripCard(trip: Trip, navHostController: NavHostController, tripsViewModel: tripsViewModel) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
+
     ElevatedCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -94,9 +96,12 @@ fun TripCard(trip: Trip, destination: Destination) {
                         showDeleteDialog=true
                     })
                     DeleteTripDialog(
+                        navHostController = navHostController,
                         showDeleteDialog = showDeleteDialog,
                         onDismissRequest = { showDeleteDialog=false},
-                        onConfirmClick = { showDeleteDialog=false }
+                        onConfirmClick = { showDeleteDialog=false},
+                        tripId=trip.tripId,
+                        tripsViewModel=tripsViewModel
                     )
                 }
             }
