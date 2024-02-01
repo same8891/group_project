@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.magnifier
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -42,7 +43,8 @@ fun AddTripDialog(
     showAddDialog: Boolean,
     onDismissRequest: () -> Unit,
     onConfirmClick: () -> Unit,
-    tripsViewModel: tripsViewModel
+    tripsViewModel: tripsViewModel,
+    destinationNames: List<String>
 ) {
     var tripName by remember { mutableStateOf("") }
     var numberOfPeople by remember { mutableIntStateOf(1) }
@@ -57,7 +59,6 @@ fun AddTripDialog(
     var userId = sharedPref.getString("email", "") ?: ""
     var collaboratorName by remember { mutableStateOf("") }
     var collaborators by remember { mutableStateOf(listOf<String>(userId)) }
-    var destinations = listOf("Destination 1", "Destination 2", "Destination 3") // Replace with your actual destination list
     var selectedDestinationIndex by remember { mutableIntStateOf(0) }
     var isDropdownExpanded by remember { mutableStateOf(false) }
     if (showAddDialog) {
@@ -80,9 +81,10 @@ fun AddTripDialog(
                             startDate = startDate,
                             endDate = endDate,
                             numberOfPeople = numberOfPeople,
-                            collaborators = collaborators,
+                            collaborators = collaborators.toMutableList(),
                             isPrivate = !isPublic,
-                            tripId = userId + title + startDate + endDate
+                            tripId = userId + title + startDate + endDate,
+                            destinationList = listOf(destinationNames[selectedDestinationIndex]).toMutableList()
                         )
                         tripsViewModel.addTrip(userId, newTrip)
                         onConfirmClick()
@@ -139,19 +141,16 @@ fun AddTripDialog(
                     Row(
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(text = "Destinations:")
+                        Text(text = "Destinations:",style = MaterialTheme.typography.titleLarge)
                         Spacer(modifier = Modifier.width(16.dp))
-                        Text(text = destinations[selectedDestinationIndex])
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Button(onClick = { isDropdownExpanded = true }) {
-                            Text("Select Destination")
-                        }
+                        Text(text = destinationNames[selectedDestinationIndex],Modifier.clickable { isDropdownExpanded = true },
+                            style = MaterialTheme.typography.titleLarge)
                         DropdownMenu(
                             expanded = isDropdownExpanded,
                             onDismissRequest = { isDropdownExpanded = false },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.width(200.dp)
                         ) {
-                            destinations.forEachIndexed { index, destination ->
+                            destinationNames.forEachIndexed { index, destination ->
                                 DropdownMenuItem(onClick = {
                                     selectedDestinationIndex = index
                                     isDropdownExpanded = false
@@ -167,9 +166,11 @@ fun AddTripDialog(
                     Spacer(modifier = Modifier.height(16.dp))
                     // Date selection (you may replace this with a date picker)
                     TextField(
+
                         value = startDate,
                         onValueChange = { startDate = it },
                         label = { Text("Start Date:") },
+
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(16.dp))

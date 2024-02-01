@@ -55,7 +55,7 @@ fun DeleteTripDialog(
                         onConfirmClick()
                         onDismissRequest()
                         tripsViewModel.deleteTrip(userEmail, tripId)
-                        tripsViewModel.getUserTrips(userEmail)
+                        tripsViewModel.getUserTrips(userEmail, {})
                     },
                     content = {
                         Text("Delete Trip")

@@ -749,13 +749,14 @@ class FirebaseApi {
     fun addTrip(userId: String, newTrip: Trip) {
         // 获取用户文档的引用
         val userTrips = db.collection("User").document(userId).collection("trips")
-        // 保存新的旅行
-        userTrips.add(newTrip)
+
+        // 使用自定义文档ID保存新的旅行
+        userTrips.document(newTrip.tripId).set(newTrip)
             .addOnSuccessListener {
                 println("旅行保存成功")
             }
-            .addOnFailureListener {
-                println("旅行保存失败: $it")
+            .addOnFailureListener { e ->
+                println("旅行保存失败: $e")
             }
     }
 
@@ -773,17 +774,19 @@ class FirebaseApi {
             }
     }
 
-    fun updateTrip(userId: String, tripId: String, newTrip: Trip) {
+    fun updateTrip(userId: String, tripId: String, newTrip: Trip, callback: (Trip?) -> Unit) {
         // 获取用户文档的引用
         val userTrips = db.collection("User").document(userId).collection("trips")
         // 更新旅行
         userTrips.document(tripId)
-            .set(newTrip)
+            .set(newTrip, SetOptions.merge())
             .addOnSuccessListener {
                 println("旅行更新成功")
+                callback(newTrip)
             }
             .addOnFailureListener {
                 println("旅行更新失败: $it")
+                callback(null)
             }
     }
 
@@ -1113,6 +1116,66 @@ class FirebaseApi {
             }
             .addOnFailureListener {
                 println("获取评论列表失败: $it")
+            }
+    }
+
+    fun getAllDestinationIds(callback: (List<String>) -> Unit) {
+        db.collection("Destination")
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val destinationIds = mutableListOf<String>()
+                for (document in querySnapshot) {
+                    destinationIds.add(document.id)
+                }
+                callback(destinationIds)
+            }
+            .addOnFailureListener {
+                println("获取所有Destination的ID失败: $it")
+                callback(emptyList())
+            }
+    }
+
+    fun getUserTrips(email: String, callback: (List<Trip>?) -> Unit) {
+        db.collection("User")
+            .whereEqualTo("email", email)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (!querySnapshot.isEmpty) {
+                    val userDocument = querySnapshot.documents[0]
+                    val userRef = userDocument.reference
+                    userRef.collection("trips")
+                        .get()
+                        .addOnSuccessListener { tripsSnapshot ->
+                            val tripsList = tripsSnapshot.toObjects(Trip::class.java)
+                            callback(tripsList)
+                        }
+                        .addOnFailureListener {
+                            println("获取用户的旅行失败: $it")
+                            callback(null)
+                        }
+                } else {
+                    callback(null)
+                }
+            }
+            .addOnFailureListener {
+                println("获取用户失败: $it")
+                callback(null)
+            }
+    }
+
+    fun getTrip(userId: String, tripId: String, callback: (Trip?) -> Unit) {
+        db.collection("User")
+            .document(userId)
+            .collection("trips")
+            .document(tripId)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                val trip = documentSnapshot.toObject(Trip::class.java)
+                callback(trip)
+            }
+            .addOnFailureListener {
+                println("获取旅行失败: $it")
+                callback(null)
             }
     }
 }

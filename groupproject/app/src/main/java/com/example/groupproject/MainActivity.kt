@@ -2,7 +2,6 @@ package com.example.groupproject
 
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -31,18 +30,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import com.example.groupproject.data.FirebaseApi
-import com.example.groupproject.data.model.Destination
 import com.example.groupproject.theme.groupProjectTheme
 import com.example.groupproject.ui.auth.AuthViewModel
 import com.example.groupproject.ui.auth.LoginScreen
@@ -55,6 +50,7 @@ import com.example.groupproject.ui.profile.profileScreen
 import com.example.groupproject.ui.profile.profileViewModel
 import com.example.groupproject.ui.setting.settingScreen
 import com.example.groupproject.ui.setting.settingViewModel
+import com.example.groupproject.ui.trips.tripDetailScreen
 import com.example.groupproject.ui.trips.tripsScreen
 import com.example.groupproject.ui.trips.tripsViewModel
 
@@ -101,6 +97,12 @@ class MainActivity : ComponentActivity() {
                         BottomNavigationBar(navController, homeViewModel, tripsViewModel,
                             profileViewModel, settingsViewModel, destinationDetailViewModel, destinationName!!, currentIndex = 0)
                     }
+
+                    composable("tripDetail/{tripId}") { backStackEntry ->
+                        val tripDetailName = backStackEntry.arguments?.getString("tripId")
+                        BottomNavigationBar(navController, homeViewModel, tripsViewModel,
+                            profileViewModel, settingsViewModel, destinationDetailViewModel, tripDetailName = tripDetailName!!, currentIndex = 1)
+                    }
                 }
             }
         }
@@ -126,7 +128,8 @@ fun BottomNavigationBar(navController: NavHostController,
                         profileViewModel: profileViewModel,
                         settingsViewModel: settingViewModel,
                         destinationDetailViewModel: destinationDetailViewModel,
-                        destinationName: String,
+                        destinationName: String = "",
+                        tripDetailName: String = "",
                         currentIndex: Int = -1) {
     var indexBar = currentIndex
     val items = listOf(
@@ -159,7 +162,11 @@ fun BottomNavigationBar(navController: NavHostController,
         if (destinationName != "") {
             mutableIntStateOf(4)
         } else {
-            mutableIntStateOf(0)
+            if (tripDetailName != "") {
+                mutableIntStateOf(5)
+            } else {
+                mutableIntStateOf(0)
+            }
         }
     }
     Surface(
@@ -222,6 +229,11 @@ fun BottomNavigationBar(navController: NavHostController,
                         navController = navController,
                         destinationName = destinationName,
                         destinationDetailViewModel = destinationDetailViewModel
+                    )
+                    5 -> tripDetailScreen(
+                        navController = navController,
+                        tripId = tripDetailName,
+                        tripsViewModel = tripsViewModel
                     )
                 }
             }

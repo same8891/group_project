@@ -15,12 +15,11 @@ class tripsViewModel(private val firebaseApi: FirebaseApi) : ViewModel() {
     val trips = mutableStateOf<List<Trip>>(emptyList())
 
     // Function to fetch all trips for a user
-    fun getUserTrips(email: String) {
+    fun getUserTrips(email: String, callback: (List<Trip>?) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
-            firebaseApi.getUserByEmail(email) { user ->
-                user?.let {
-                    trips.value = user.trips
-                }
+            firebaseApi.getUserTrips(email) { tripsList ->
+                trips.value = tripsList ?: emptyList()
+                callback(trips.value)
             }
         }
     }
@@ -50,16 +49,18 @@ class tripsViewModel(private val firebaseApi: FirebaseApi) : ViewModel() {
     }
     var destinationIds: List<String> = emptyList()
 
-    fun getAllDestinationIds() {
-        viewModelScope.launch(Dispatchers.IO) {
-            firebaseApi.getAllDestinations { destinationsList ->
-                destinationIds = destinationsList.map { it.destinationId }
-                Log.d("DestinationIds", "$destinationIds")
-            }
+    fun getAllDestinationIds(callback: (List<String>?) -> Unit) {
+        firebaseApi.getAllDestinationIds { destinationIdsList ->
+            destinationIds = destinationIdsList ?: emptyList()
+            callback(destinationIdsList)
         }
     }
 
-    fun updateTrip(userId: String, tripId: String, newTrip: Trip) {
-        firebaseApi.updateTrip(userId, tripId, newTrip)
+    fun updateTrip(userId: String, tripId: String, newTrip: Trip,callback: (Trip?) -> Unit) {
+        firebaseApi.updateTrip(userId, tripId, newTrip, callback)
+    }
+
+    fun getTrip(userId: String, tripId: String, callback: (Trip?) -> Unit) {
+        firebaseApi.getTrip(userId, tripId, callback)
     }
 }

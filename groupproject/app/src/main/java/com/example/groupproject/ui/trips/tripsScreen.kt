@@ -3,11 +3,8 @@ package com.example.groupproject.ui.trips
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 //import androidx.compose.foundation.layout.BoxScopeInstance.align
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 
 //import androidx.compose.foundation.layout.FlowColumnScopeInstance.align
 import androidx.compose.foundation.layout.Spacer
@@ -19,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -32,27 +28,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.InspectableModifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.groupproject.data.model.Destination
-import org.checkerframework.common.subtyping.qual.Bottom
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun tripsScreen(navHostController: NavHostController, tripsViewModel: tripsViewModel) {
+fun tripsScreen(
+    navHostController: NavHostController,
+    tripsViewModel: tripsViewModel
+) {
     // Fetch user trips when the screen is created
     val context = navHostController.context
     val sharedPref: SharedPreferences =
         context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
     val userEmail = sharedPref.getString("email", "") ?: ""
-    tripsViewModel.getUserTrips(userEmail)
+    tripsViewModel.getUserTrips(userEmail, {})
     var showAddDialog by remember { mutableStateOf(false) }
-
     // Observe the trips LiveData
     val trips = tripsViewModel.trips.value
 
@@ -92,18 +86,30 @@ fun tripsScreen(navHostController: NavHostController, tripsViewModel: tripsViewM
                 contentPadding = innerPadding
             ) {
                 items(trips) { trip ->
-                    TripCard(trip = trip, navHostController, tripsViewModel)
+                    TripCard(
+                        trip = trip,
+                        navHostController,
+                        tripsViewModel,
+                        onClick = {
+                            // 在这里执行导航到个人资料页面的操作
+                            navHostController.navigate("tripDetail/${trip.tripId}")
+                        }
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
     }
+    tripsViewModel.getAllDestinations()
+    val destinations = tripsViewModel.destinations.value
+    val destinationNames = destinations.map { it.name }
             AddTripDialog(
             navHostController=navHostController,
             showAddDialog = showAddDialog,
             onDismissRequest = { showAddDialog = false },
-            onConfirmClick = { showAddDialog = false },
-            tripsViewModel = tripsViewModel
+            onConfirmClick = { showAddDialog = false},
+            tripsViewModel = tripsViewModel,
+                destinationNames = destinationNames
         )
 }
 
