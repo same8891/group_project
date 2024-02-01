@@ -9,5 +9,6 @@ data class Trip(
     val endDate: String = "",
     val isPrivate: Boolean = false,
     val title: String = "",
+    val totalCost: Double = 0.0,
     var numberOfPeople: Int = 0
 )

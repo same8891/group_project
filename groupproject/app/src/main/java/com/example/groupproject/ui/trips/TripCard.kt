@@ -67,7 +67,7 @@ fun TripCard(trip: Trip, navHostController: NavHostController, tripsViewModel: t
 
                     Column(){
                         Text(text = "Number Of People: ${trip.numberOfPeople.toString()}")
-                        Text(text = "Total Cost: ")
+                        Text(text = "Total Cost: ${trip.totalCost.toString()}")
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                 }
