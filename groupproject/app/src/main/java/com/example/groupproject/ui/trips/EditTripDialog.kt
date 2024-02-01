@@ -1,5 +1,7 @@
 package com.example.groupproject.ui.trips
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.navigation.NavHostController
 import com.example.groupproject.data.model.Trip
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,8 +57,13 @@ fun EditTripDialog(
     showEditDialog: Boolean,
     trip: Trip,
     AllDestination: List<String>,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    tripsViewModel: tripsViewModel,
+    navHostController: NavHostController
 ) {
+    val context = navHostController.context
+    val sharedPref: SharedPreferences = context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
+    val userId = sharedPref.getString("email", "") ?: ""
     var expanded by remember { mutableStateOf(false) }
     val list = AllDestination.subtract(trip.destinationList).toList()
     Log.d("dl","$trip.destinationList")
@@ -78,9 +86,7 @@ fun EditTripDialog(
             confirmButton = {
                 Button(
                     onClick = {
-                        // Handle the creation of the new trip here
                         onDismissRequest()
-                        //firebaseApi.deleteTrip()
                     },
                     content = {
                         Text("Save Changes")
@@ -98,7 +104,7 @@ fun EditTripDialog(
             text={
                 Column(
                     modifier = Modifier
-                        //                    .padding(16.dp)
+                        //.padding(16.dp)
                         .fillMaxWidth(),
                     verticalArrangement = Arrangement.Center
 
@@ -127,6 +133,9 @@ fun EditTripDialog(
                                 },
                                 modifier = Modifier.menuAnchor()
                             )
+                            Log.d("EditTripDialog", "AllDestination: $AllDestination")
+                            Log.d("EditTripDialog", "Trip Destination List: ${trip.destinationList}")
+
                             ExposedDropdownMenu(
                                 expanded = expanded,
                                 onDismissRequest = { expanded = false },
@@ -149,7 +158,7 @@ fun EditTripDialog(
                         }
                         Button(
                             onClick = {
-                                //                        Add it to destination list
+                                // Add it to destination list
                             },
                             modifier = Modifier.padding(start = 12.dp)
                         ) {
@@ -165,9 +174,26 @@ fun EditTripDialog(
                             items(trip.destinationList) { destination ->
                                 showitem(
                                     itemName = destination,
-                                    onUpClick = { /* Handle up arrow click */ },
-                                    onDownClick = { /* Handle down arrow click */ },
-                                    onDeleteClick = { /* Handle delete button click */ }
+                                    onUpClick = {
+                                        var tempId=trip.destinationList.indexOf(destination)
+                                        swapWithPrevious(trip,tempId)
+                                    },
+                                    onDownClick = {
+                                        var tempId=trip.destinationList.indexOf(destination)
+                                        swapWithNext(trip,tempId)
+                                    },
+                                    onDeleteClick = {
+                                        trip.destinationList.remove(destination)
+                                        val newTrip = Trip(
+                                            title = trip.title,
+                                            numberOfPeople = trip.numberOfPeople,
+                                            isPrivate = trip.isPrivate,
+                                            description = trip.description,
+                                            destinationList = trip.destinationList,
+                                            startDate = trip.startDate,
+                                            endDate = trip.endDate)
+                                        tripsViewModel.updateTrip(userId,trip.tripId ,newTrip)
+                                    }
                                 )
                             }
                         }
@@ -182,13 +208,28 @@ fun EditTripDialog(
         )
     }
 }
+fun swapWithPrevious(trip: Trip, index: Int) {
+    if (index > 0) {
+        val temp = trip.destinationList[index]
+        trip.destinationList[index] = trip.destinationList[index - 1]
+        trip.destinationList[index - 1] = temp
+    }
+}
+
+fun swapWithNext(trip: Trip, index: Int) {
+    if (index < trip.destinationList.size - 1) {
+        val temp = trip.destinationList[index]
+        trip.destinationList[index] = trip.destinationList[index + 1]
+        trip.destinationList[index + 1] = temp
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
 fun preida() {
     var trip = listOf("kyoto", "Taipei", "NewYork")
-    var alltrip = Trip(destinationList = listOf("kyoto", "Taipei", "NewYork", "paris"))
-    EditTripDialog(true,alltrip,trip){}
+    var alltrip = Trip(destinationList = mutableListOf("kyoto", "Taipei", "NewYork", "paris"))
+    //EditTripDialog(true,alltrip,trip, tripsViewModel){}
 //    showitem(itemName = "taipei", onUpClick = { }, onDownClick = {}, onDeleteClick = {})
 }
 @Composable
