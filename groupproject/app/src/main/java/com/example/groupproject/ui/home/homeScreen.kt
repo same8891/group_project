@@ -61,8 +61,8 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel,profile
     var State by remember { mutableStateOf(1) }
     var searchInput by remember { mutableStateOf("") }
     var selectedCheckBoxItems by remember { mutableStateOf<List<String>>(emptyList()) }
-    var selectedOption1 by remember { mutableStateOf(SortOrder.ASCENDING_NAME) }
-    var selectedOption2 by remember { mutableStateOf(SortOrder.Empty) }
+    var selectedOption1 by remember { mutableStateOf(SortOrder.ASCENDING) }
+    var selectedOption2 by remember { mutableStateOf(SortOrder.Name) }
     val checkedItemsRem = remember { mutableStateListOf<Boolean>(false, false, false, false) }
     val destinations = homeViewModel.destinations.value
     val context = navController.context
@@ -74,7 +74,7 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel,profile
         settingsViewModel.getUser(userEmail)
         homeViewModel.getAllDestinations()
     }
-    if(selectedOption1 == SortOrder.ASCENDING_NAME && selectedOption2 == SortOrder.Empty)
+    if(selectedOption1 == SortOrder.ASCENDING && selectedOption2 == SortOrder.Name)
     {
         filteredDestinations = destinations.filter { destination ->
             val nameMatch = destination.name.contains(searchInput, ignoreCase = true)
@@ -83,7 +83,7 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel,profile
             (nameMatch || locationMatch) && checkBoxMatch
         }.sortedBy { it.name }
     }
-    else if (selectedOption1 == SortOrder.DESCENDING_NAME && selectedOption2 == SortOrder.Empty)
+    else if (selectedOption1 == SortOrder.DESCENDING && selectedOption2 == SortOrder.Name)
     {
         filteredDestinations = destinations.filter { destination ->
             val nameMatch = destination.name.contains(searchInput, ignoreCase = true)
@@ -92,32 +92,32 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel,profile
             (nameMatch || locationMatch) && checkBoxMatch
         }.sortedByDescending { it.name }
     }
-    else if(selectedOption1 == SortOrder.ASCENDING_NAME && selectedOption2 == SortOrder.Likes)
+    else if(selectedOption1 == SortOrder.ASCENDING && selectedOption2 == SortOrder.Likes)
     {
         filteredDestinations = destinations.filter { destination ->
             val nameMatch = destination.name.contains(searchInput, ignoreCase = true)
             val locationMatch = destination.location.contains(searchInput, ignoreCase = true)
             val checkBoxMatch = selectedCheckBoxItems.isEmpty() || selectedCheckBoxItems.all { it in destination.tags}
             (nameMatch || locationMatch) && checkBoxMatch
-        }.sortedWith(compareBy( { -it.likes }, {it.name}))
+        }.sortedBy { it.likes }
     }
-    else if(selectedOption1 == SortOrder.DESCENDING_NAME && selectedOption2 == SortOrder.Likes)
+    else if(selectedOption1 == SortOrder.DESCENDING && selectedOption2 == SortOrder.Likes)
     {
         filteredDestinations = destinations.filter { destination ->
             val nameMatch = destination.name.contains(searchInput, ignoreCase = true)
             val locationMatch = destination.location.contains(searchInput, ignoreCase = true)
             val checkBoxMatch = selectedCheckBoxItems.isEmpty() || selectedCheckBoxItems.all { it in destination.tags}
             (nameMatch || locationMatch) && checkBoxMatch
-        }.sortedWith(compareBy<Destination>( { -it.likes }).thenByDescending { it.name })
+        }.sortedByDescending { it.likes }
     }
-    else if(selectedOption1 == SortOrder.ASCENDING_NAME && selectedOption2 == SortOrder.RATING)
+    else if(selectedOption1 == SortOrder.ASCENDING && selectedOption2 == SortOrder.RATING)
     {
         filteredDestinations = destinations.filter { destination ->
             val nameMatch = destination.name.contains(searchInput, ignoreCase = true)
             val locationMatch = destination.location.contains(searchInput, ignoreCase = true)
             val checkBoxMatch = selectedCheckBoxItems.isEmpty() || selectedCheckBoxItems.all { it in destination.tags}
             (nameMatch || locationMatch) && checkBoxMatch
-        }.sortedWith(compareBy( { -it.reviews.map { it.rating }.average() }, {it.name}))
+        }.sortedBy { it.reviews.map { it.rating }.average() }
     }
     else
     {
@@ -126,7 +126,7 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel,profile
             val locationMatch = destination.location.contains(searchInput, ignoreCase = true)
             val checkBoxMatch = selectedCheckBoxItems.isEmpty() || selectedCheckBoxItems.all { it in destination.tags}
             (nameMatch || locationMatch) && checkBoxMatch
-        }.sortedWith(compareBy<Destination>( { -it.reviews.map { it.rating }.average() }).thenByDescending { it.name })
+        }.sortedByDescending { it.reviews.map { it.rating }.average() }
     }
 
     Column(
@@ -195,8 +195,8 @@ fun homeScreen(navController: NavController,homeViewModel: homeViewModel,profile
 @Composable
 fun homepre() {
     val navController = rememberNavController()
-    var selectedOption1 by remember { mutableStateOf(SortOrder.ASCENDING_NAME) }
-    var selectedOption2 by remember { mutableStateOf(SortOrder.Empty) }
+    var selectedOption1 by remember { mutableStateOf(SortOrder.ASCENDING) }
+    var selectedOption2 by remember { mutableStateOf(SortOrder.Name) }
 //    RadioGroup(SortOrder.ASCENDING_NAME,SortOrder.Empty,onOptionSelected = {s1,s2-> })
 //    CheckBoxList{}
 }
@@ -321,8 +321,9 @@ fun getSelectedItems(items: List<String>, checkedItems: List<Boolean>): List<Str
     return items.filterIndexed { index, _ -> checkedItems[index] }
 }
 enum class SortOrder {
-    ASCENDING_NAME,
-    DESCENDING_NAME,
+    ASCENDING,
+    DESCENDING,
+    Name,
     Likes,
     RATING,
     Empty
@@ -337,6 +338,7 @@ fun RadioGroup(
     var currentSortOrder2 = selectedOption2
     val options = SortOrder.values()
     val choices = listOf(
+        SortOrder.Name,
         SortOrder.Likes,
         SortOrder.RATING
     )
@@ -349,11 +351,11 @@ fun RadioGroup(
                 modifier = Modifier
                     .width(120.dp)
                     .padding(start = 8.dp)){
-                Text(text = "Name")
+                Text(text = "Des/Aes")
                 Switch(
-                    checked = selectedOption1 == SortOrder.ASCENDING_NAME,
+                    checked = selectedOption1 == SortOrder.ASCENDING,
                     onCheckedChange = {
-                        onOptionSelected(if (it) SortOrder.ASCENDING_NAME else SortOrder.DESCENDING_NAME,currentSortOrder2)
+                        onOptionSelected(if (it) SortOrder.ASCENDING else SortOrder.DESCENDING,currentSortOrder2)
                     },
                     modifier = Modifier.padding(start = 8.dp)
                 )
@@ -375,6 +377,7 @@ fun RadioGroup(
                     )
                     Text(
                         text = when (choice) {
+                            SortOrder.Name -> "Name"
                             SortOrder.Likes -> "Likes"
                             SortOrder.RATING -> "Rating"
                             else -> ""
@@ -384,7 +387,7 @@ fun RadioGroup(
             }
         }
         Button(
-            onClick = { onOptionSelected(SortOrder.ASCENDING_NAME,SortOrder.Empty) },
+            onClick = { onOptionSelected(SortOrder.ASCENDING,SortOrder.Name) },
             modifier = Modifier
                 .width(100.dp)
                 .align(Alignment.End)
