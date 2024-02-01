@@ -42,6 +42,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.groupproject.R
 import com.example.groupproject.data.model.Review
 import com.google.firebase.FirebaseApp
@@ -59,7 +60,15 @@ fun reviewCard(review: Review, destinationDetailViewModel: destinationDetailView
     LaunchedEffect(likes) {
         animatedLikes.animateTo(likes.toFloat(), animationSpec = spring())
     }
-
+    //get user image by url
+    val userImage = remember { mutableStateOf("") }
+    LaunchedEffect(review.userId) {
+        destinationDetailViewModel.getUserImage(review.userId) { url ->
+            if (url != null) {
+                userImage.value = url
+            }
+        }
+    }
 
     Card(
         modifier = Modifier
@@ -76,15 +85,27 @@ fun reviewCard(review: Review, destinationDetailViewModel: destinationDetailView
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Display circular avatar
-            Image(
-                painter = painterResource(id = R.drawable.cat), // replace R.drawable.avt with your actual image resource
-                contentDescription = null,
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
-                    .border(1.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
-            )
+            if (userImage.value.isNotEmpty()) {
+                AsyncImage(
+                    model  = userImage.value,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                        .border(1.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.cat), // replace R.drawable.avt with your actual image resource
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                        .border(1.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                )
+            }
 
             // Spacer for separation
             Spacer(modifier = Modifier.width(16.dp))

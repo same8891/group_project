@@ -72,4 +72,14 @@ class destinationDetailViewModel(private val firebaseApi: FirebaseApi) : ViewMod
             firebaseApi.removeDestinationFromSaved(destination, user)
         }
     }
+
+    fun getUserImage(userId: String, callback: (String?) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            firebaseApi.getUserByEmail(userId) { result ->
+                if (result != null) {
+                    callback(result.profile[0].photoImage)
+                }
+            }
+        }
+    }
 }
