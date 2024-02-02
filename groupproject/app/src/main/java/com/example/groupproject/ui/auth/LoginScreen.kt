@@ -37,7 +37,12 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
     var password by remember { mutableStateOf("test") }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
-
+    val sharedPref: SharedPreferences = navController.context.getSharedPreferences("user_data", Context.MODE_PRIVATE)
+    val userEmail = sharedPref.getString("email","") ?: ""
+    Log.d("user", "$userEmail")
+    if(!userEmail.equals("")){
+        navController.navigate("home")
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -118,6 +123,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
                             putString("email", user.email)
                             commit()
                         }
+
                         navController.navigate("home")
                     } else {
                         errorMessage = "Invalid email or password"

@@ -406,6 +406,14 @@ fun settingScreen(navController: NavHostController, settingsViewModel: settingVi
                         onClick = {
 
                             showDialog = false
+                            val sharedPrefClean = navController.context.getSharedPreferences(
+                                "user_data",
+                                Context.MODE_PRIVATE
+                            )
+                            with(sharedPrefClean.edit()) {
+                                clear()
+                                commit()
+                            }
                             navController.navigate("login")
                         }
                     ) {
