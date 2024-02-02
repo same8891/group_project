@@ -87,8 +87,9 @@ fun AddTripDialog(
                             collaborators = collaborators.toMutableList(),
                             isPrivate = !isPublic,
                             tripId = userId + title + startDate + endDate,
-                            destinationList = listOf(destinationNames[selectedDestinationIndex]).toMutableList()
-                        )
+                            //destinationList = listOf(destinationNames[selectedDestinationIndex]).toMutableList()
+                            destinationList = ArrayList()
+                            )
                         tripsViewModel.addTrip(userId, newTrip)
                         onConfirmClick()
                         onDismissRequest()
@@ -133,14 +134,14 @@ fun AddTripDialog(
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    TextField(
-                        value = totalCost.toString(),
-                        onValueChange = { totalCost = it.toDoubleOrNull() ?: 0.0 },
-                        label = { Text("Total Cost():") },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                    )
-//                    //Add Dropdown for destinations
+//                    TextField(
+//                        value = totalCost.toString(),
+//                        onValueChange = { totalCost = it.toDoubleOrNull() ?: 0.0 },
+//                        label = { Text("Total Cost():") },
+//                        modifier = Modifier.fillMaxWidth(),
+//                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+//                    )
+                    //Add Dropdown for destinations
 //                    Row(
 //                        modifier = Modifier.fillMaxWidth()
 //                    ) {
@@ -163,9 +164,39 @@ fun AddTripDialog(
 //                            }
 //                        }
 //                    }
+                    //new
+//                    var selectedDestinationIndex by remember { mutableStateOf(-1) } // -1 indicates no selection
+//                    var isDropdownExpanded by remember { mutableStateOf(false) }
+//
+//                    Row(modifier = Modifier.fillMaxWidth()) {
+//                        Text(text = "Destinations:", style = MaterialTheme.typography.titleLarge)
+//                        Spacer(modifier = Modifier.width(16.dp))
+//
+//                        val displayText = if (selectedDestinationIndex >= 0) destinationNames[selectedDestinationIndex] else "Select Destination"
+//                        Text(
+//                            text = displayText,
+//                            modifier = Modifier.clickable { isDropdownExpanded = true },
+//                            style = MaterialTheme.typography.titleLarge
+//                        )
+//
+//                        DropdownMenu(
+//                            expanded = isDropdownExpanded,
+//                            onDismissRequest = { isDropdownExpanded = false },
+//                            modifier = Modifier.width(200.dp)
+//                        ) {
+//                            destinationNames.forEachIndexed { index, destination ->
+//                                DropdownMenuItem(onClick = {
+//                                    selectedDestinationIndex = index
+//                                    isDropdownExpanded = false
+//                                },text= {
+//                                    Text(destination)
+//                                })
+//                            }
+//                        }
+//                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    // Date selection (you may replace this with a date picker)
+                    // Date selection
                     TextField(
                         value = startDate,
                         onValueChange = { startDate = it },
@@ -215,6 +246,7 @@ fun AddTripDialog(
                             colors = RadioButtonDefaults.colors(Color.Black)
                         )
                         Text("Private", style = MaterialTheme.typography.bodyLarge)
+
                         RadioButton(
                             selected = isPublic,
                             onClick = { isPublic = true },

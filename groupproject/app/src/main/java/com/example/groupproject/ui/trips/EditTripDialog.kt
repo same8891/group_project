@@ -127,7 +127,7 @@ fun EditTripDialog(
                             },
                             modifier = Modifier
                                 .width(200.dp)
-                                .height(40.dp)
+//                                .height(40.dp)
                         ) {
                             OutlinedTextField(
                                 value = select,

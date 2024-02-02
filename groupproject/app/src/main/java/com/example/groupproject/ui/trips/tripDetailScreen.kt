@@ -47,7 +47,10 @@ fun tripDetailScreen(
     }
     Spacer(modifier = Modifier.height(16.dp))
     //Show Destination List
-    LazyColumn {
+    LazyColumn (
+        modifier = Modifier
+            .padding(16.dp)
+    ){
         items(trip.destinationList.size) { index ->
             val destination = trip.destinationList[index]
             Text(
