@@ -1,6 +1,5 @@
 package com.example.groupproject.ui.trips
 
-import android.content.ComponentCallbacks
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
@@ -50,7 +49,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
-import com.example.groupproject.data.model.Destination
 import com.example.groupproject.data.model.Trip
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,8 +68,6 @@ fun EditTripDialog(
     val list = AllDestination.subtract(trip.destinationList).toList()
     Log.d("dl","$trip.destinationList")
     var select by remember { mutableStateOf(if (list.isNotEmpty()) list[0] else "") }
-    var tripDestinationList by remember { mutableStateOf(trip.destinationList.toList())}
-    Log.d("tripDestinationList", "EditTripDialog: $tripDestinationList")
     val icon = if (expanded) {
         Icons.Outlined.KeyboardArrowUp
     } else {
@@ -80,6 +76,7 @@ fun EditTripDialog(
     if (showEditDialog){
         AlertDialog(
             onDismissRequest = onDismissRequest,
+
             title = {
                 Text(
                     text = "Edit Trip",
@@ -90,7 +87,6 @@ fun EditTripDialog(
                 Button(
                     onClick = {
                         onDismissRequest()
-                        tripsViewModel.getUserTrips(userId, {})
                     },
                     content = {
                         Text("Save Changes")
@@ -102,13 +98,13 @@ fun EditTripDialog(
                     onClick = onDismissRequest,
                     content = {
                         Text("Cancel")
-                        tripsViewModel.getUserTrips(userId, {})
                     }
                 )
             },
             text={
                 Column(
                     modifier = Modifier
+                        //.padding(16.dp)
                         .fillMaxWidth(),
                     verticalArrangement = Arrangement.Center
 
@@ -137,6 +133,9 @@ fun EditTripDialog(
                                 },
                                 modifier = Modifier.menuAnchor()
                             )
+                            Log.d("EditTripDialog", "AllDestination: $AllDestination")
+                            Log.d("EditTripDialog", "Trip Destination List: ${trip.destinationList}")
+
                             ExposedDropdownMenu(
                                 expanded = expanded,
                                 onDismissRequest = { expanded = false },
@@ -146,10 +145,10 @@ fun EditTripDialog(
                                 list.forEach {
                                     DropdownMenuItem(
                                         text = {
-                                            Text(text = it)
+                                            Text(text = it.toString())
                                         },
                                         onClick = {
-                                            select = it
+                                            select = it.toString()
                                             expanded = false
                                         }
                                     )
@@ -159,68 +158,48 @@ fun EditTripDialog(
                         }
                         Button(
                             onClick = {
-                                val newTrip = trip.copy(destinationList = tripDestinationList.plus(select).toMutableList())
-                                tripsViewModel.updateTrip(userId,trip.tripId ,newTrip, callback = {
-                                    if (it != null) {
-                                        tripDestinationList = it.destinationList
-                                    }
-                                })
+                                // Add it to destination list
                             },
                             modifier = Modifier.padding(start = 12.dp)
                         ) {
                             Text("Add")
                         }
+
                     }
                     Log.d("trip destination","$trip.destinationList.size")
-                    if(tripDestinationList.size > 0) {
+                    if(trip.destinationList.size > 0) {
                         LazyColumn(
-                            modifier = Modifier
-                                .size(300.dp)
-                                .align(Alignment.CenterHorizontally)
+                            modifier = Modifier.size(300.dp).align(Alignment.CenterHorizontally)
                         ) {
-                            items(tripDestinationList) { destination ->
+                            items(trip.destinationList) { destination ->
                                 showitem(
                                     itemName = destination,
                                     onUpClick = {
-                                        val tempId=tripDestinationList.indexOf(destination)
-                                        swapWithPrevious(tripDestinationList,tempId, callback = {
-                                            val newTrip = trip.copy(destinationList = it.toMutableList())
-                                            tripsViewModel.updateTrip(userId,trip.tripId ,newTrip, callback = {
-                                                if (it != null) {
-                                                    tripDestinationList = it.destinationList
-                                                }
-                                            })
-                                        })
-
-
+                                        var tempId=trip.destinationList.indexOf(destination)
+                                        swapWithPrevious(trip,tempId)
                                     },
                                     onDownClick = {
-                                        val tempId=tripDestinationList.indexOf(destination)
-                                        swapWithNext(tripDestinationList,tempId, callback = {
-                                            val newTrip = trip.copy(destinationList = it.toMutableList())
-                                            tripsViewModel.updateTrip(userId,trip.tripId ,newTrip, callback = {
-                                                if (it != null) {
-                                                    tripDestinationList = it.destinationList
-                                                }
-                                            })
-                                        })
+                                        var tempId=trip.destinationList.indexOf(destination)
+                                        swapWithNext(trip,tempId)
                                     },
                                     onDeleteClick = {
-                                        val newTrip = trip.copy(destinationList = tripDestinationList.minus(destination).toMutableList())
-                                        tripsViewModel.updateTrip(userId,trip.tripId ,newTrip, callback = {
-                                            if (it != null) {
-                                                tripDestinationList = it.destinationList
-                                            }
-                                        })
+                                        trip.destinationList.remove(destination)
+                                        val newTrip = Trip(
+                                            title = trip.title,
+                                            numberOfPeople = trip.numberOfPeople,
+                                            isPrivate = trip.isPrivate,
+                                            description = trip.description,
+                                            destinationList = trip.destinationList,
+                                            startDate = trip.startDate,
+                                            endDate = trip.endDate)
+                                        tripsViewModel.updateTrip(userId,trip.tripId ,newTrip)
                                     }
                                 )
                             }
                         }
                     }
                     else{
-                        Box(modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .size(300.dp) ){
+                        Box(modifier = Modifier.align(Alignment.CenterHorizontally).size(300.dp) ){
                             Text(text = "The trip is empty",modifier = Modifier.align(Alignment.Center))
                         }
                     }
@@ -229,23 +208,19 @@ fun EditTripDialog(
         )
     }
 }
-fun swapWithPrevious(destinationList: List<String>, index: Int, callback: (List<String>) -> Unit) {
-    var newDestinationList = destinationList.toMutableList()
+fun swapWithPrevious(trip: Trip, index: Int) {
     if (index > 0) {
-        val temp = newDestinationList[index]
-        newDestinationList[index] = newDestinationList[index - 1]
-        newDestinationList[index - 1] = temp
-        callback(newDestinationList)
+        val temp = trip.destinationList[index]
+        trip.destinationList[index] = trip.destinationList[index - 1]
+        trip.destinationList[index - 1] = temp
     }
 }
 
-fun swapWithNext(destinationList: List<String>, index: Int, callback: (List<String>) -> Unit) {
-    var newDestinationList = destinationList.toMutableList()
-    if (index < destinationList.size - 1) {
-        val temp = newDestinationList[index]
-        newDestinationList[index] = newDestinationList[index + 1]
-        newDestinationList[index + 1] = temp
-        callback(newDestinationList)
+fun swapWithNext(trip: Trip, index: Int) {
+    if (index < trip.destinationList.size - 1) {
+        val temp = trip.destinationList[index]
+        trip.destinationList[index] = trip.destinationList[index + 1]
+        trip.destinationList[index + 1] = temp
     }
 }
 
