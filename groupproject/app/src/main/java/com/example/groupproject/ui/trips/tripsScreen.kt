@@ -49,24 +49,17 @@ fun tripsScreen(
     var showAddDialog by remember { mutableStateOf(false) }
     // Observe the trips LiveData
     val trips = tripsViewModel.trips.value
-
+    Text(
+        text = "Your Trips",
+        color = MaterialTheme.colorScheme.background,
+        fontSize = MaterialTheme.typography.displayMedium.fontSize,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primary),
+    )
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Your Trips",
-                        color = MaterialTheme.colorScheme.background,
-                        fontSize = MaterialTheme.typography.displayMedium.fontSize,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.primary),
-                    )
-                }
-            )
-        },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { showAddDialog = true },
